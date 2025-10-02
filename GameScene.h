@@ -16,10 +16,16 @@ public:
 	~GameScene();
 
 private:
-	// テクスチャハンドル
-	uint32_t textureHandle_ = 0;
+	// 自機ハートハンドル
+	uint32_t hatoHandle_ = 0;
 
-	// スプライトを複数持つ
+	//敵ハートハンドル
+	uint32_t ehatoHadle_ = 0;
+
+	// 自機ハートを複数持つ
 	std::vector<Sprite*> hearts_;
+
+	// 敵ハートを複数持つ
+	std::vector<Sprite*> enemyHearts_;
 
 };
