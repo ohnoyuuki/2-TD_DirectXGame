@@ -1,5 +1,6 @@
 #pragma once
 #include "KamataEngine.h"
+#include"Player.h"
 
 using namespace KamataEngine;
 
@@ -16,6 +17,8 @@ public:
 	~GameScene();
 
 private:
+
+	//自機--------------------------
 	// 自機ハートハンドル
 	uint32_t hatoHandle_ = 0;
 
@@ -27,6 +30,25 @@ private:
 
 	// プレイヤーHP
 	int playerHP_ = 0;
+
+	//自機ハンドル
+	uint32_t playerHandle_ = 0;
+
+	//3Dモデルデータ
+	Model* modelPlayer_ = nullptr;
+
+	//自キャラ
+	Player* player_ = nullptr;
+
+	//------------------------------
+
+
+	//ワールドトランスフォーム
+	WorldTransform worldTransform_;
+
+	//カメラ
+	Camera camera_;
+
 
 	// 敵ハートを複数持つ
 	std::vector<Sprite*> enemyHearts_;

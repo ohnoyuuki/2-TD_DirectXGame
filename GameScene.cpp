@@ -16,7 +16,28 @@ void GameScene::Initialize() {
 
 	// プレイヤーHP = ハート数
 	playerHP_ = static_cast<int>(hearts_.size());
+
+	//ファイル名を指定してテクスチャハンドルを読み込む
+	playerHandle_ = TextureManager::Load("uvChecker.png");
+
+	//3Dモデルデータの生成
+	modelPlayer_ = Model::Create();
+
+	//自キャラの生成
+	player_ = new Player();
+	//自キャラの初期化
+	player_->Initialize(modelPlayer_, playerHandle_,&camera_);
+
 	//-------------------------------------
+
+	//ワールドトランスフォーム
+	worldTransform_.Initialize();
+
+	//カメラの初期化
+	camera_.Initialize();
+
+
+
 
 
 	//敵のハート//
@@ -31,20 +52,46 @@ void GameScene::Initialize() {
 
 }
 
+
+
 // 更新
 void GameScene::Update() {
+
+	//自キャラ------------------------------------------
 	// スペースキーが押された瞬間に HP を1減らす
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 		if (playerHP_ > 0) {
 			playerHP_--;
 		}
 	}
+	//自キャラの更新
+	player_->Update();
+
 
 
 }
 
 // 描画
 void GameScene::Draw() {
+
+	//自キャラの描画
+	player_->Draw();
+
+
+	//3Dモデル描画前処理
+	Model::PreDraw();
+
+	//3Dモデル描画
+	modelPlayer_->Draw(worldTransform_, camera_, playerHandle_);
+
+
+
+	//3Dモデル描画後処理
+	Model::PostDraw();
+
+
+
+
 	// スプライト描画前処理
 	Sprite::PreDraw();
 
@@ -62,16 +109,29 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 
 
+
+
 }
 
 // デストラクタ
 GameScene::~GameScene() {
+
+	//自機------------------------------------------------------
+	
 
 	// 生成したスプライトを解放
 	for (auto& heart : hearts_) {
 		delete heart;
 	}
 	hearts_.clear(); // ベクターの中身（ポインタの参照）を削除
+
+	//自キャラの解放
+	delete player_;
+
+	delete modelPlayer_;
+
+	//-----------------------------------------------------------
+
 
 	// 生成したスプライトを解放
 	for (auto& enemyHeart : hearts_) {
