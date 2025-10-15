@@ -10,9 +10,9 @@ void Player::Initialize(Model* model, /*uint32_t textureHandle,*/ Camera* camera
 	camera_ = camera;
 	worldtransform_.Initialize();
 
-	worldtransform_.translation_ = {-2.0f, -2.0f, 0.0f}; // X, Y, Z の位置
+	worldtransform_.translation_ = {-2.0f, 0.0f, 0.0f}; // X, Y, Z の位置
 	worldtransform_.scale_ = {1.0f, 1.0f, 1.0f};          // 大きさ
-	worldtransform_.rotation_ = {0.0f, 800.0f, 0.0f};          // 回転
+	worldtransform_.rotation_ = {0.0f, 900.0f, 0.0f};          // 回転
 
 	// 行列をGPUに転送（初期化時）
 	worldtransform_.TransferMatrix();
