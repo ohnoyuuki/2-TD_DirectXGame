@@ -28,31 +28,17 @@ void GameScene::Initialize() {
 	//自キャラの初期化
 	player_->Initialize(modelPlayer_, &camera_);
 
-	//ワールド変更の初期化
-	worldTransformPlayer_.Initialize();
-	worldTransformPlayer_.scale_ = {10,10,10};
-	worldTransformPlayer_.translation_ = {0, -8, 0};
-	worldTransformPlayer_.rotation_ = {0.0f, 0.0f, 0.0f};
-
-
 	//-------------------------------------
-
-	//ワールドトランスフォーム
-	worldTransform_.Initialize();
-
-	worldTransform_.translation_ = {0.0f, 10000.0f, 200.0f}; // X, Y, Z の位置
-	worldTransform_.scale_ = {20.0f, 20.0f, 20.0f};          // 大きさ
-	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};          // 回転（ラジアン）
 
 	//カメラの初期化
 	camera_.Initialize();
 
 	// デバッグカメラの生成
-	debugCamera_ = new KamataEngine::DebugCamera(1280, 720);
+	//debugCamera_ = new KamataEngine::DebugCamera(1280, 720);
 	// 軸方向表示の表示を有効にする
-	KamataEngine::AxisIndicator::GetInstance()->SetVisible(true);
+	//KamataEngine::AxisIndicator::GetInstance()->SetVisible(true);
 	// 軸方向表示が参照するビュープロジェクションを指定する（アドレス渡し）
-	KamataEngine::AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
+	//KamataEngine::AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
 
 	//敵のハート//
@@ -83,29 +69,22 @@ void GameScene::Update() {
 	player_->Update();
 
 	//デバッグカメラの更新
-	debugCamera_->Update();
+	//debugCamera_->Update();
 
-
-	worldTransformPlayer_.matWorld_ = MakeAffineMatrix(worldTransformPlayer_.scale_, worldTransformPlayer_.rotation_, worldTransformPlayer_.translation_);
-	worldTransformPlayer_.TransferMatrix();
-
-
+	camera_.translation_ = Vector3(0.0f, 0.0f, -10.0f);
+	camera_.UpdateMatrix();
 }
 
 // 描画
 void GameScene::Draw() {
 
-	////自キャラの描画
-	player_->Draw();
 
 
 	//3Dモデル描画前処理
 	Model::PreDraw();
 
-	//3Dモデル描画
-	modelPlayer_->Draw(worldTransform_, debugCamera_->GetCamera(), playerHandle_);
-
-
+	////自キャラの描画
+	player_->Draw();
 
 	//3Dモデル描画後処理
 	Model::PostDraw();
@@ -154,7 +133,7 @@ GameScene::~GameScene() {
 	//-----------------------------------------------------------
 
 	//デバッグカメラ
-	delete debugCamera_;
+	//delete debugCamera_;
 
 
 

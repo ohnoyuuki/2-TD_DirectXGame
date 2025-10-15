@@ -1,10 +1,8 @@
 #include "MyMath.h"
-using namespace KamataEngine;
-using namespace MathUtility;
 #include <cmath>
 #include <numbers>
 
-KamataEngine::Matrix4x4 MakeAffineMatrix(KamataEngine::Vector3& scale, KamataEngine::Vector3& rotaion, KamataEngine::Vector3& translation) {
+Matrix4x4 MakeAffineMatrix(Vector3& scale, Vector3& rotaion, Vector3& translation) {
 	// スケーリング行列の作成
 	Matrix4x4 matScale = MakeScaleMatrix(scale);
 

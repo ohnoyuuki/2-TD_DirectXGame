@@ -1,5 +1,5 @@
 #pragma once
-#include"KamataEngine.h"
+#include "KamataEngine.h"
 
 using namespace KamataEngine;
 
@@ -12,15 +12,14 @@ public:
 	// 描画
 	void Draw();
 
-	private:
-		//ワールド変換データ
-	    WorldTransform worldtransform_;
-		//モデル
-	    Model* model_ = nullptr;
-		////テクスチャハンドル
-	 //   uint32_t textureHandle_ = 0u;
+private:
+	// ワールド変換データ
+	WorldTransform worldtransform_;
+	// モデル
+	Model* model_ = nullptr;
+	////テクスチャハンドル
+	// uint32_t textureHandle_ = 0u;
 
-		//カメラ
-	    Camera* camera_ = nullptr;
-
+	// カメラ
+	Camera* camera_ = nullptr;
 };

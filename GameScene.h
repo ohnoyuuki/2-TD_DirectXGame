@@ -46,19 +46,14 @@ private:
 	//自キャラ
 	Player* player_ = nullptr;
 
-	WorldTransform worldTransformPlayer_;
 
 	//------------------------------
-
-
-	//ワールドトランスフォーム
-	WorldTransform worldTransform_;
 
 	//カメラ
 	Camera camera_;
 
 	//デバッグカメラ
-	DebugCamera* debugCamera_ = nullptr;
+	//DebugCamera* debugCamera_ = nullptr;
 	bool isDebugCameraActive_ = false;
 
 
