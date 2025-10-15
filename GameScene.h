@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include"Player.h"
+#include"Enemy.h"
 #include"input/Input.h"
 #include <algorithm>
 #include <array>
@@ -40,12 +41,16 @@ private:
 	//自機ハンドル
 	uint32_t playerHandle_ = 0;
 
-	//3Dモデルデータ
+	//自機3Dモデルデータ
 	Model* modelPlayer_ = nullptr;
 
 	//自キャラ
 	Player* player_ = nullptr;
 
+	//敵キャラ
+	Enemy* enemy_ = nullptr;
+
+	Model* modelEnemy_ = nullptr;
 
 	//------------------------------
 

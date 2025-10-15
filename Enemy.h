@@ -1,9 +1,8 @@
-#pragma once
 #include "KamataEngine.h"
 
 using namespace KamataEngine;
 
-class Player {
+class Enemy {
 public:
 	// 初期化
 	void Initialize(Model* model, Camera* camera);
@@ -17,7 +16,8 @@ private:
 	WorldTransform worldtransform_;
 	// モデル
 	Model* model_ = nullptr;
-	
+
+
 	// カメラ
 	Camera* camera_ = nullptr;
 };

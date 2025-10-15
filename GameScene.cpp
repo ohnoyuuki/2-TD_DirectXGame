@@ -4,6 +4,7 @@
 // 初期化
 void GameScene::Initialize() {
 
+	//自キャラ
 	//自機のハート//
 	//ファイル名を指定してテクスチャハンドルを読み込む
 	hatoHandle_ = TextureManager::Load("ha-to.png");
@@ -40,7 +41,18 @@ void GameScene::Initialize() {
 	// 軸方向表示が参照するビュープロジェクションを指定する（アドレス渡し）
 	//KamataEngine::AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
+	//敵キャラ----------------------------
+	
+	// 3Dモデルデータの生成
+	modelEnemy_ = Model::CreateFromOBJ("enemy");
 
+	// 敵キャラの生成
+	enemy_ = new Enemy();
+	// 敵キャラの初期化
+	enemy_->Initialize(modelEnemy_, &camera_); 
+	 
+
+	
 	//敵のハート//
 	ehatoHadle_ = TextureManager::Load("Eha-to.png");
 	//複数のスプライトを生成
@@ -67,6 +79,14 @@ void GameScene::Update() {
 	}
 	//自キャラの更新
 	player_->Update();
+	//-------------------------------------------------
+
+	//敵キャラ-----------------------------------------
+	enemy_->Update();
+
+
+
+
 
 	//デバッグカメラの更新
 	//debugCamera_->Update();
@@ -80,13 +100,16 @@ void GameScene::Draw() {
 
 
 
-	//3Dモデル描画前処理
+	//3Dモデル描画前処理---------------
 	Model::PreDraw();
 
 	////自キャラの描画
 	player_->Draw();
 
-	//3Dモデル描画後処理
+	//敵キャラの描画
+	enemy_->Draw();
+
+	//3Dモデル描画後処理---------------
 	Model::PostDraw();
 
 
@@ -132,10 +155,18 @@ GameScene::~GameScene() {
 
 	//-----------------------------------------------------------
 
+
+	//敵---------------------------------------------------------
+
+	//敵キャラの解放
+	delete enemy_;
+	delete modelEnemy_;
+
+
+	//-----------------------------------------------------------
+
 	//デバッグカメラ
 	//delete debugCamera_;
-
-
 
 	// 生成したスプライトを解放
 	for (auto& enemyHeart : hearts_) {
