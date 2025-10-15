@@ -6,7 +6,7 @@ using namespace KamataEngine;
 class Player {
 public:
 	// 初期化
-	void Initialize(Model* model, uint32_t textureHandle, Camera* camera);
+	void Initialize(Model* model, Camera* camera /*uint32_t textureHandle,*/);
 	// 更新
 	void Update();
 	// 描画
@@ -17,8 +17,8 @@ public:
 	    WorldTransform worldtransform_;
 		//モデル
 	    Model* model_ = nullptr;
-		//テクスチャハンドル
-	    uint32_t textureHandle_ = 0u;
+		////テクスチャハンドル
+	 //   uint32_t textureHandle_ = 0u;
 
 		//カメラ
 	    Camera* camera_ = nullptr;

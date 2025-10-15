@@ -1,5 +1,5 @@
 #include "GameScene.h"
-#include"input/Input.h"
+
 
 // 初期化
 void GameScene::Initialize() {
@@ -18,26 +18,41 @@ void GameScene::Initialize() {
 	playerHP_ = static_cast<int>(hearts_.size());
 
 	//ファイル名を指定してテクスチャハンドルを読み込む
-	playerHandle_ = TextureManager::Load("uvChecker.png");
+	playerHandle_ = TextureManager::Load("a.png");
 
 	//3Dモデルデータの生成
-	modelPlayer_ = Model::Create();
+	modelPlayer_ = Model::CreateFromOBJ("player");
 
 	//自キャラの生成
 	player_ = new Player();
 	//自キャラの初期化
-	player_->Initialize(modelPlayer_, playerHandle_,&camera_);
+	player_->Initialize(modelPlayer_, &camera_);
+
+	//ワールド変更の初期化
+	worldTransformPlayer_.Initialize();
+	worldTransformPlayer_.scale_ = {10,10,10};
+	worldTransformPlayer_.translation_ = {0, -8, 0};
+	worldTransformPlayer_.rotation_ = {0.0f, 0.0f, 0.0f};
+
 
 	//-------------------------------------
 
 	//ワールドトランスフォーム
 	worldTransform_.Initialize();
 
+	worldTransform_.translation_ = {0.0f, 10000.0f, 200.0f}; // X, Y, Z の位置
+	worldTransform_.scale_ = {20.0f, 20.0f, 20.0f};          // 大きさ
+	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};          // 回転（ラジアン）
+
 	//カメラの初期化
 	camera_.Initialize();
 
-
-
+	// デバッグカメラの生成
+	debugCamera_ = new KamataEngine::DebugCamera(1280, 720);
+	// 軸方向表示の表示を有効にする
+	KamataEngine::AxisIndicator::GetInstance()->SetVisible(true);
+	// 軸方向表示が参照するビュープロジェクションを指定する（アドレス渡し）
+	KamataEngine::AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
 
 
 	//敵のハート//
@@ -67,6 +82,12 @@ void GameScene::Update() {
 	//自キャラの更新
 	player_->Update();
 
+	//デバッグカメラの更新
+	debugCamera_->Update();
+
+
+	worldTransformPlayer_.matWorld_ = MakeAffineMatrix(worldTransformPlayer_.scale_, worldTransformPlayer_.rotation_, worldTransformPlayer_.translation_);
+	worldTransformPlayer_.TransferMatrix();
 
 
 }
@@ -74,7 +95,7 @@ void GameScene::Update() {
 // 描画
 void GameScene::Draw() {
 
-	//自キャラの描画
+	////自キャラの描画
 	player_->Draw();
 
 
@@ -82,7 +103,7 @@ void GameScene::Draw() {
 	Model::PreDraw();
 
 	//3Dモデル描画
-	modelPlayer_->Draw(worldTransform_, camera_, playerHandle_);
+	modelPlayer_->Draw(worldTransform_, debugCamera_->GetCamera(), playerHandle_);
 
 
 
@@ -108,7 +129,7 @@ void GameScene::Draw() {
 	// スプライト描画後処理
 	Sprite::PostDraw();
 
-
+	
 
 
 }
@@ -127,10 +148,14 @@ GameScene::~GameScene() {
 
 	//自キャラの解放
 	delete player_;
-
+	//モデル解放
 	delete modelPlayer_;
 
 	//-----------------------------------------------------------
+
+	//デバッグカメラ
+	delete debugCamera_;
+
 
 
 	// 生成したスプライトを解放

@@ -1,8 +1,14 @@
 #pragma once
 #include "KamataEngine.h"
 #include"Player.h"
+#include"input/Input.h"
+#include <algorithm>
+#include <array>
+#include <numbers>
+#include"MyMath.h"
 
 using namespace KamataEngine;
+using namespace MathUtility;
 
 class GameScene {
 
@@ -40,6 +46,8 @@ private:
 	//自キャラ
 	Player* player_ = nullptr;
 
+	WorldTransform worldTransformPlayer_;
+
 	//------------------------------
 
 
@@ -48,6 +56,10 @@ private:
 
 	//カメラ
 	Camera camera_;
+
+	//デバッグカメラ
+	DebugCamera* debugCamera_ = nullptr;
+	bool isDebugCameraActive_ = false;
 
 
 	// 敵ハートを複数持つ
