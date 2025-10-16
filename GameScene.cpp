@@ -85,7 +85,7 @@ void GameScene::Initialize() {
 	//-------------------------------
 	// 攻撃ターン初期値
 	//-------------------------------
-	playerAttackTurn = 3;
+	playerAttackTurn = 10;
 }
 
 //==================================================
@@ -134,24 +134,36 @@ void GameScene::Update() {
 				// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
 				if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
 					playerHP_--; // ミス（自分にダメージ）
+					player_->OnDamage(); // ★ ダメージリアクション発動！			
 				}
 				if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
-					enemyHP_--; // 弱攻撃
+					enemyHP_--;          // 弱攻撃
+					player_->OnAttack(); // ★ 攻撃モーション発動！
+					enemy_->OnDamage(); 
 				}
 				if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
 					enemyHP_ -= attackGauge2; // 中攻撃
+					player_->OnAttack();      // ★ 攻撃モーション発動！
+					enemy_->OnDamage(); 
 				}
 				if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
 					enemyHP_ -= attackGauge3; // 強攻撃
+					player_->OnAttack();      // ★ 攻撃モーション発動！
+					enemy_->OnDamage(); 
 				}
 				if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
 					enemyHP_ -= attackGauge2; // 中攻撃
+					player_->OnAttack();      // ★ 攻撃モーション発動！
+					enemy_->OnDamage(); 
 				}
 				if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
-					enemyHP_--; // 弱攻撃
+					enemyHP_--;          // 弱攻撃
+					player_->OnAttack(); // ★ 攻撃モーション発動！
+					enemy_->OnDamage(); 
 				}
 				if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
 					playerHP_--; // ミス（自分にダメージ）
+					player_->OnDamage(); // ★ ダメージリアクション発動！	
 				}
 			}
 		}
@@ -174,6 +186,7 @@ void GameScene::Update() {
 	//------------------------------------------
 	camera_.translation_ = Vector3(0.0f, 0.0f, -10.0f);
 	camera_.UpdateMatrix();
+
 }
 
 //==================================================
@@ -247,4 +260,8 @@ GameScene::~GameScene() {
 	// （デバッグカメラは未使用）
 	//------------------------------------------
 	// delete debugCamera_;
+}
+
+void GameScene::StartCameraShake() {
+
 }

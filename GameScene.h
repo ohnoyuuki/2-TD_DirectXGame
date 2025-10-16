@@ -34,6 +34,8 @@ public:
 	// デストラクタ（終了時にメモリを解放）
 	~GameScene();
 
+	void StartCameraShake();
+
 private:
 	//==================================================
 	// ▼ 自機（プレイヤー）関連
@@ -93,7 +95,7 @@ private:
 	float attackArrowY = 576 - 32;
 
 	// プレイヤーが攻撃できる残り回数
-	int playerAttackTurn = 3;
+	int playerAttackTurn = 5;
 
 	// 攻撃判定ライン（矢印の位置を判定用に保存）
 	float attackGaugeLain = attackArrowY - 32;
@@ -119,4 +121,12 @@ private:
 
 	// デバッグカメラ使用フラグ
 	bool isDebugCameraActive_ = false;
+
+	// カメラの揺れ
+	bool isCameraShaking_ = false;
+	int cameraShakeTimer_ = 0;
+	float cameraShakePower_ = 0.05f;
+
+	// カメラの元位置を保存
+	Vector3 defaultCameraPos_ = {0.0f, 1.0f, -10.0f};
 };
