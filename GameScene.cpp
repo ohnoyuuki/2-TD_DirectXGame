@@ -1,177 +1,250 @@
 #include "GameScene.h"
 
-
-// 初期化
+//==================================================
+// 初期化処理
+//==================================================
 void GameScene::Initialize() {
 
-	//自キャラ
-	//自機のハート//
-	//ファイル名を指定してテクスチャハンドルを読み込む
+	//-------------------------------
+	// 自機のHPハート設定
+	//-------------------------------
+
+	// プレイヤーのハート画像を読み込み
 	hatoHandle_ = TextureManager::Load("ha-to.png");
-	// 複数のスプライトを生成
+
+	// ハートスプライトを5個生成して並べる
 	for (int i = 0; i < 5; i++) {
-		// X座標を少しずつずらして配置
+		// X座標を少しずつずらして横に配置
 		Sprite* heart = Sprite::Create(hatoHandle_, {300.0f + i * 55.0f, 660.0f});
 		hearts_.push_back(heart);
 	}
 
-	// プレイヤーHP = ハート数
-	playerHP_ = static_cast<int>(hearts_.size());
+	//-------------------------------
+	// 敵のHPハート設定
+	//-------------------------------
 
-	//ファイル名を指定してテクスチャハンドルを読み込む
-	playerHandle_ = TextureManager::Load("a.png");
-
-	//3Dモデルデータの生成
-	modelPlayer_ = Model::CreateFromOBJ("player");
-
-	//自キャラの生成
-	player_ = new Player();
-	//自キャラの初期化
-	player_->Initialize(modelPlayer_, &camera_);
-
-	//-------------------------------------
-
-	//カメラの初期化
-	camera_.Initialize();
-
-	// デバッグカメラの生成
-	//debugCamera_ = new KamataEngine::DebugCamera(1280, 720);
-	// 軸方向表示の表示を有効にする
-	//KamataEngine::AxisIndicator::GetInstance()->SetVisible(true);
-	// 軸方向表示が参照するビュープロジェクションを指定する（アドレス渡し）
-	//KamataEngine::AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
-
-	//敵キャラ----------------------------
-	
-	// 3Dモデルデータの生成
-	modelEnemy_ = Model::CreateFromOBJ("enemy");
-
-	// 敵キャラの生成
-	enemy_ = new Enemy();
-	// 敵キャラの初期化
-	enemy_->Initialize(modelEnemy_, &camera_); 
-	 
-
-	
-	//敵のハート//
+	// 敵ハート画像を読み込み
 	ehatoHadle_ = TextureManager::Load("Eha-to.png");
-	//複数のスプライトを生成
+
+	// 敵ハートを5個生成して上部に並べる
 	for (int i = 0; i < 5; i++) {
-		// X座標を少しずつずらして配置
 		Sprite* enemyHeart = Sprite::Create(ehatoHadle_, {1000.0f + i * 55.0f, 10.0f});
 		enemyHearts_.push_back(enemyHeart);
 	}
-	//------------------------------------
 
+	// HPの初期値（ハートの数で設定）
+	playerHP_ = static_cast<int>(hearts_.size());
+	enemyHP_ = static_cast<int>(enemyHearts_.size());
+
+	//-------------------------------
+	// プレイヤー設定
+	//-------------------------------
+
+	// プレイヤーの画像を読み込み
+	playerHandle_ = TextureManager::Load("a.png");
+
+	// 3Dモデルの読み込み
+	modelPlayer_ = Model::CreateFromOBJ("player");
+
+	// プレイヤーオブジェクト生成
+	player_ = new Player();
+
+	// モデルとカメラを渡して初期化
+	player_->Initialize(modelPlayer_, &camera_);
+
+	//-------------------------------
+	// 攻撃ゲージの設定
+	//-------------------------------
+
+	// 攻撃ゲージ本体の画像読み込み
+	attackHandle_ = TextureManager::Load("geegiBer.png");
+	attackSprite_ = Sprite::Create(attackHandle_, {0, 0});
+
+	// 攻撃ゲージ上を動く矢印画像読み込み
+	attackArrowHandle_ = TextureManager::Load("RighAttackArrow.png");
+	attackArrowSprite_ = Sprite::Create(attackArrowHandle_, {attackArrowX, attackArrowY});
+
+	//-------------------------------
+	// カメラ設定
+	//-------------------------------
+	camera_.Initialize();
+
+	//-------------------------------
+	// 敵キャラ設定
+	//-------------------------------
+
+	// 敵3Dモデル読み込み
+	modelEnemy_ = Model::CreateFromOBJ("enemy");
+
+	// 敵オブジェクト生成
+	enemy_ = new Enemy();
+
+	// モデルとカメラを渡して初期化
+	enemy_->Initialize(modelEnemy_, &camera_);
+
+	//-------------------------------
+	// 攻撃ターン初期値
+	//-------------------------------
+	playerAttackTurn = 3;
 }
 
-
-
-// 更新
+//==================================================
+// 更新処理
+//==================================================
 void GameScene::Update() {
 
-	//自キャラ------------------------------------------
-	// スペースキーが押された瞬間に HP を1減らす
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		if (playerHP_ > 0) {
-			playerHP_--;
+	//------------------------------------------
+	// 攻撃ゲージの矢印の移動処理
+	//------------------------------------------
+
+	// プレイヤーの攻撃ターンが残っているときのみ動作
+	if (playerAttackTurn > 0) {
+
+		// 矢印のY座標を上下に動かす
+		attackArrowY += arrowDirection * 2;
+
+		// 画面上端で反転
+		if (attackArrowY <= 0) {
+			attackArrowY = 0;
+			arrowDirection = 5; // 下方向に
+		}
+		// 画面下端で反転
+		else if (attackArrowY >= 576) {
+			attackArrowY = 576;
+			arrowDirection = -5; // 上方向に
+		}
+
+		//------------------------------------------
+		// スペースキーで攻撃判定
+		//------------------------------------------
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+
+			// 一時停止 → 攻撃判定処理
+			if (arrowDirection == 0) {
+				// 動きを再開（上方向へ）
+				attackArrowY = 576;
+				arrowDirection = -5;
+			} else {
+				// 矢印の動きを止めて攻撃処理実行
+				arrowDirection = 0;
+
+				// 攻撃ターンを1消費
+				playerAttackTurn--;
+
+				// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
+				if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
+					playerHP_--; // ミス（自分にダメージ）
+				}
+				if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
+					enemyHP_--; // 弱攻撃
+				}
+				if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
+					enemyHP_ -= attackGauge2; // 中攻撃
+				}
+				if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
+					enemyHP_ -= attackGauge3; // 強攻撃
+				}
+				if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
+					enemyHP_ -= attackGauge2; // 中攻撃
+				}
+				if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
+					enemyHP_--; // 弱攻撃
+				}
+				if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
+					playerHP_--; // ミス（自分にダメージ）
+				}
+			}
 		}
 	}
-	//自キャラの更新
-	player_->Update();
-	//-------------------------------------------------
 
-	//敵キャラ-----------------------------------------
+	// 矢印スプライトの座標を更新
+	attackArrowSprite_->SetPosition({attackArrowX, attackArrowY});
+
+	// 攻撃ゲージライン位置を更新
+	attackGaugeLain = attackArrowY + 24;
+
+	//------------------------------------------
+	// プレイヤー・敵の更新処理
+	//------------------------------------------
+	player_->Update();
 	enemy_->Update();
 
-
-
-
-
-	//デバッグカメラの更新
-	//debugCamera_->Update();
-
+	//------------------------------------------
+	// カメラ更新
+	//------------------------------------------
 	camera_.translation_ = Vector3(0.0f, 0.0f, -10.0f);
 	camera_.UpdateMatrix();
 }
 
-// 描画
+//==================================================
+// 描画処理
+//==================================================
 void GameScene::Draw() {
 
-
-
-	//3Dモデル描画前処理---------------
+	//------------------------------------------
+	// 3Dモデル描画
+	//------------------------------------------
 	Model::PreDraw();
 
-	////自キャラの描画
-	player_->Draw();
+	player_->Draw(); // プレイヤー
+	enemy_->Draw();  // 敵
 
-	//敵キャラの描画
-	enemy_->Draw();
-
-	//3Dモデル描画後処理---------------
 	Model::PostDraw();
 
-
-
-
-	// スプライト描画前処理
+	//------------------------------------------
+	// 2Dスプライト描画
+	//------------------------------------------
 	Sprite::PreDraw();
 
-	// プレイヤーHP分だけ描画する
+	// 攻撃ゲージと矢印を描画
+	attackSprite_->Draw();
+	attackArrowSprite_->Draw();
+
+	// プレイヤーの残りHP分ハートを描画
 	for (int i = 0; i < playerHP_; i++) {
 		hearts_[i]->Draw();
 	}
 
-	// 敵ハートは常に全描画
-	for (auto& enemyHeart : enemyHearts_) {
-		enemyHeart->Draw();
+	// 敵の残りHP分ハートを描画
+	for (int i = 0; i < enemyHP_; i++) {
+		enemyHearts_[i]->Draw();
 	}
 
-	// スプライト描画後処理
 	Sprite::PostDraw();
-
-	
-
-
 }
 
-// デストラクタ
+//==================================================
+// デストラクタ（終了処理）
+//==================================================
 GameScene::~GameScene() {
 
-	//自機------------------------------------------------------
-	
-
-	// 生成したスプライトを解放
+	//------------------------------------------
+	// プレイヤー関連の解放
+	//------------------------------------------
 	for (auto& heart : hearts_) {
 		delete heart;
 	}
-	hearts_.clear(); // ベクターの中身（ポインタの参照）を削除
+	hearts_.clear();
 
-	//自キャラの解放
 	delete player_;
-	//モデル解放
 	delete modelPlayer_;
 
-	//-----------------------------------------------------------
+	delete attackSprite_;
+	delete attackArrowSprite_;
 
-
-	//敵---------------------------------------------------------
-
-	//敵キャラの解放
+	//------------------------------------------
+	// 敵関連の解放
+	//------------------------------------------
 	delete enemy_;
 	delete modelEnemy_;
 
-
-	//-----------------------------------------------------------
-
-	//デバッグカメラ
-	//delete debugCamera_;
-
-	// 生成したスプライトを解放
-	for (auto& enemyHeart : hearts_) {
+	for (auto& enemyHeart : enemyHearts_) {
 		delete enemyHeart;
 	}
-	enemyHearts_.clear(); // ベクターの中身（ポインタの参照）を削除
+	enemyHearts_.clear();
 
+	//------------------------------------------
+	// （デバッグカメラは未使用）
+	//------------------------------------------
+	// delete debugCamera_;
 }
