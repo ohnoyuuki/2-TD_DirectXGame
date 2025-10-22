@@ -1,5 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
+#include "MyMath.h"
+#include "input/Input.h"
 
 using namespace KamataEngine;
 

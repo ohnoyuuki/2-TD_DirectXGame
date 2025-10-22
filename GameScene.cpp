@@ -40,11 +40,8 @@ void GameScene::Initialize() {
 	// プレイヤー設定
 	//-------------------------------
 
-	// プレイヤーの画像を読み込み
-	playerHandle_ = TextureManager::Load("a.png");
-
 	// 3Dモデルの読み込み
-	modelPlayer_ = Model::CreateFromOBJ("player");
+	modelPlayer_ = Model::CreateFromOBJ("suraimu");
 
 	// プレイヤーオブジェクト生成
 	player_ = new Player();
@@ -86,6 +83,11 @@ void GameScene::Initialize() {
 	// 攻撃ターン初期値
 	//-------------------------------
 	playerAttackTurn = 10;
+	//-------------------------------
+	// とげ攻撃
+	//-------------------------------
+
+
 }
 
 //==================================================

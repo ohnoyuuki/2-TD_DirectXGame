@@ -3,6 +3,7 @@
 #include "KamataEngine.h"
 #include "MyMath.h"
 #include "Player.h"
+#include"toge.h"
 #include "input/Input.h"
 #include <algorithm>
 #include <array>
@@ -73,6 +74,14 @@ private:
 
 	// 敵の3Dモデルデータ
 	Model* modelEnemy_ = nullptr;
+
+
+	//とげ攻撃本体
+	Toge* toge_ = nullptr; 
+
+	//とげ攻撃の3Dモデルデータ
+	Model* modelToge_ = nullptr;
+
 
 	//==================================================
 	// ▼ 攻撃ゲージ関連
