@@ -8,7 +8,7 @@ using namespace KamataEngine;
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
 	//エンジンの初期化
-	KamataEngine::Initialize(L"2162_タイトル");
+	KamataEngine::Initialize(L"2162_ひげぷにウォータ");
 
 	//ゲームシーンのインスタンス生成
 	GameScene* gameScene = new GameScene();

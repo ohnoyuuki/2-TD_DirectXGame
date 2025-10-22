@@ -54,11 +54,16 @@ private:
 	// 敵のハートスプライト（HP表示用）を複数管理
 	std::vector<Sprite*> enemyHearts_;
 
+	//HP管理
+	int playerHPPoint_ = 5;
+
+	int enemyHPPoint_ = 5;
+
 	// プレイヤーのHP（ハート数で決まる）
-	int playerHP_ = 0;
+	int playerHP_ = playerHPPoint_;
 
 	// 敵のHP（ハート数で決まる）
-	int enemyHP_ = 0;
+	int enemyHP_ = enemyHPPoint_;
 
 	// プレイヤーの画像ハンドル
 	uint32_t playerHandle_ = 0;
@@ -104,7 +109,7 @@ private:
 	float attackArrowY = 576 - 32;
 
 	// プレイヤーが攻撃できる残り回数
-	int playerAttackTurn = 5;
+	int playerAttackTurn = 3;
 
 	// 攻撃判定ライン（矢印の位置を判定用に保存）
 	float attackGaugeLain = attackArrowY - 32;
@@ -117,6 +122,17 @@ private:
 
 	// 攻撃倍率（強攻撃）
 	int attackGauge3 = 3;
+
+
+	//シーン切り替え
+	bool titleScene = false;
+	bool stageRuruScene = false;
+	bool stageEnemy1 = false;
+	bool stageEnemy2 = false;
+	bool stageEnemy3 = false;
+	bool gameOver = false;
+	bool gameClear = false;
+
 
 	//==================================================
 	// ▼ カメラ関連
