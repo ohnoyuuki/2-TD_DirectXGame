@@ -107,6 +107,7 @@ void GameScene::Initialize() {
 	modelKami_ = Model::CreateFromOBJ("toge");
 
 	kami_ = new Kaminari();
+	kami_->Initialize(modelKami_, &camera_);
 	//---------------------------------
 
 }
@@ -116,7 +117,7 @@ void GameScene::Initialize() {
 //==================================================
 void GameScene::Update() {
 
-	//タイトル
+	//タイトルシーン
 	if (titleScene == 1) {
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			titleScene = 0;
@@ -163,6 +164,8 @@ void GameScene::Update() {
 			arrowDirection = -5; // 上方向に
 		}
 
+
+
 		//------------------------------------------
 		// スペースキーで攻撃判定
 		//------------------------------------------
@@ -204,12 +207,14 @@ void GameScene::Update() {
 					player_->OnAttack();      // ★ 攻撃モーション発動！
 					enemy_->OnDamage(); 
 					StartCameraShake();
+					kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
+
 				}
 				if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
 					enemyHP_ -= attackGauge2; // 中攻撃
 					player_->OnAttack();      // ★ 攻撃モーション発動！
 					enemy_->OnDamage(); 
-					toge_->Start(enemy_->GetWorldPosition()); // ←追加：敵の下からとげ出現！
+					toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
 				}
 				if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
 					enemyHP_--;          // 弱攻撃
@@ -222,9 +227,28 @@ void GameScene::Update() {
 					StartCameraShake();
 				}
 			}
-
-
 		}
+
+		if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
+			stageEnemy2 = 1;
+			playerHPPoint_ = playerHPPoint_ += 1;
+			enemyHPPoint_ = 5;
+			playerAttackTurn = 3;
+			stageEnemy1 = 0;
+		}
+		if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
+			stageEnemy3 = 1;
+			playerHPPoint_ = playerHPPoint_ += 1;
+			enemyHPPoint_ = 5;
+			playerAttackTurn = 3;
+			stageEnemy2 = 0;
+		}
+		if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
+			gameClear = 1;
+			stageEnemy3 = 0;
+		}
+
+		
 	}
 
 	// 矢印スプライトの座標を更新

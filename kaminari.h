@@ -13,6 +13,9 @@ public:
 	// 描画
 	void Draw();
 
+	 // 出現（敵の上に雷を落とす）
+	void Start(const Vector3& enemyPos);
+
 private:
 	// ワールド変換データ
 	WorldTransform worldTransform_;
@@ -21,4 +24,9 @@ private:
 
 	// カメラ
 	Camera* camera_ = nullptr;
+
+	// 出現中フラグ
+	bool isActive_ = false;
+	// 出現時間
+	int activeTimer_ = 0;
 };
