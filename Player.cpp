@@ -6,14 +6,14 @@ void Player::Initialize(Model* model, Camera* camera) {
 	assert(model);
 	model_ = model;
 	camera_ = camera;
-	worldtransform_.Initialize();
+	worldTransform_.Initialize();
 
-	worldtransform_.translation_ = {-2.0f, 0.0f, 0.0f}; // X, Y, Z の位置
-	worldtransform_.scale_ = {1.0f, 1.0f, 1.0f};// 大きさ
-	worldtransform_.rotation_ = {0.0f, 850.0f, 0.0f};// 回転
+	worldTransform_.translation_ = {-2.0f, 0.0f, 0.0f}; // X, Y, Z の位置
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};// 大きさ
+	worldTransform_.rotation_ = {0.0f, 850.0f, 0.0f};// 回転
 
 	// 行列をGPUに転送（初期化時）
-	worldtransform_.TransferMatrix();
+	worldTransform_.TransferMatrix();
 }
 
 void Player::Update() {
@@ -21,13 +21,13 @@ void Player::Update() {
 	  // 攻撃中の処理
 	if (isAttacking_) {
 		// 少し前に出る（Z軸マイナス方向に前進）
-		worldtransform_.translation_.z += attackPower_;
+		worldTransform_.translation_.z += attackPower_;
 
 		attackTimer_--;
 
 		if (attackTimer_ <= 0) {
 			isAttacking_ = false;
-			worldtransform_.translation_.z = -2.0f; // 元の位置に戻す
+			worldTransform_.translation_.z = -2.0f; // 元の位置に戻す
 		}
 	}
 
@@ -35,11 +35,11 @@ void Player::Update() {
 	 // ダメージ中の処理
 	if (isDamaged_) {
 		// ノックバック（Z軸方向に少し後ろへ）
-		worldtransform_.translation_.z -= knockbackPower_;
+		worldTransform_.translation_.z -= knockbackPower_;
 
 		// だんだん小さく揺れる（スケールを小さくして戻す）
 		float scaleShake = 1.0f - 0.1f * sinf(static_cast<float>(damageTimer_) * 0.5f);
-		worldtransform_.scale_ = {scaleShake, scaleShake, scaleShake};
+		worldTransform_.scale_ = {scaleShake, scaleShake, scaleShake};
 
 		// タイマーを減らす
 		damageTimer_--;
@@ -47,15 +47,15 @@ void Player::Update() {
 		// 終わったら元に戻す
 		if (damageTimer_ <= 0) {
 			isDamaged_ = false;
-			worldtransform_.scale_ = {1.0f, 1.0f, 1.0f};
-			worldtransform_.translation_.z = -2.0f; // 元の位置に戻す
+			worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+			worldTransform_.translation_.z = -2.0f; // 元の位置に戻す
 		}
 	}
 
 	 // 行列を更新
-	worldtransform_.matWorld_ = MakeAffineMatrix(worldtransform_.scale_, worldtransform_.rotation_, worldtransform_.translation_);
+	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 	// 行列を定数バッファに転送
-	worldtransform_.TransferMatrix();
+	worldTransform_.TransferMatrix();
 }
 
 void Player::Draw() {
@@ -63,7 +63,7 @@ void Player::Draw() {
 	if (damageTimer_ > 0 && (damageTimer_ / 3) % 2 == 0)
 		return;
 
-	model_->Draw(worldtransform_, *camera_);
+	model_->Draw(worldTransform_, *camera_);
 
 }
 

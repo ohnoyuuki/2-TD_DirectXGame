@@ -1,9 +1,10 @@
+#pragma once
 #include "KamataEngine.h"
 #include "MyMath.h"
 
 using namespace KamataEngine;
 
-class Enemy {
+class Kaminari {
 public:
 	// 初期化
 	void Initialize(Model* model, Camera* camera);
@@ -11,11 +12,6 @@ public:
 	void Update();
 	// 描画
 	void Draw();
-
-	 // ダメージを受けたとき呼ばれる関数
-	void OnDamage();
-
-	 Vector3 GetWorldPosition() const { return worldTransform_.translation_; }
 
 private:
 	// ワールド変換データ
@@ -25,9 +21,4 @@ private:
 
 	// カメラ
 	Camera* camera_ = nullptr;
-
-	// ノックバック関連
-	bool isDamaged_ = false;
-	int damageTimer_ = 0;
-	float knockbackPower_ = 0.1f; // ノックバックの強さ（大きくしたければ0.2f〜0.3fに）
 };

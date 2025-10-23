@@ -25,7 +25,7 @@ public:
 
 private:
 	// ワールド変換データ
-	WorldTransform worldtransform_;
+	WorldTransform worldTransform_;
 	// モデル
 	Model* model_ = nullptr;
 	// カメラ

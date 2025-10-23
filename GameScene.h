@@ -4,6 +4,7 @@
 #include "MyMath.h"
 #include "Player.h"
 #include"toge.h"
+#include"kaminari.h"
 #include "input/Input.h"
 #include <algorithm>
 #include <array>
@@ -80,12 +81,18 @@ private:
 	// 敵の3Dモデルデータ
 	Model* modelEnemy_ = nullptr;
 
-
 	//とげ攻撃本体
 	Toge* toge_ = nullptr; 
 
 	//とげ攻撃の3Dモデルデータ
 	Model* modelToge_ = nullptr;
+
+	//雷攻撃本体
+	Kaminari*kami_ = nullptr;
+
+	//雷攻撃の3Dモデルデータ
+	Model* modelKami_ = nullptr;
+
 
 
 	//==================================================

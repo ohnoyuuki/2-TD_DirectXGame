@@ -93,9 +93,21 @@ void GameScene::Initialize() {
 	//-------------------------------
 	playerAttackTurn = 3;
 	//-------------------------------
-	// とげ攻撃
+	// 攻撃種類
 	//-------------------------------
+	//とげ攻撃
+	//3Dモデル読み込み
+	modelToge_ = Model::CreateFromOBJ("toge");
 
+	toge_ = new Toge();
+
+	toge_->Initialize(modelToge_,&camera_);
+	//雷攻撃
+	// 3Dモデル読み込み
+	modelKami_ = Model::CreateFromOBJ("toge");
+
+	kami_ = new Kaminari();
+	//---------------------------------
 
 }
 
@@ -104,7 +116,7 @@ void GameScene::Initialize() {
 //==================================================
 void GameScene::Update() {
 
-
+	//タイトル
 	if (titleScene == 1) {
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			titleScene = 0;
@@ -156,6 +168,8 @@ void GameScene::Update() {
 		//------------------------------------------
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 
+
+
 			// 一時停止 → 攻撃判定処理
 			if (arrowDirection == 0) {
 				// 動きを再開（上方向へ）
@@ -171,7 +185,8 @@ void GameScene::Update() {
 				// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
 				if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
 					playerHP_--; // ミス（自分にダメージ）
-					player_->OnDamage(); // ★ ダメージリアクション発動！			
+					player_->OnDamage(); // ★ ダメージリアクション発動！
+					StartCameraShake();
 				}
 				if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
 					enemyHP_--;          // 弱攻撃
@@ -185,13 +200,16 @@ void GameScene::Update() {
 				}
 				if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
 					enemyHP_ -= attackGauge3; // 強攻撃
+					playerHP_--;
 					player_->OnAttack();      // ★ 攻撃モーション発動！
 					enemy_->OnDamage(); 
+					StartCameraShake();
 				}
 				if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
 					enemyHP_ -= attackGauge2; // 中攻撃
 					player_->OnAttack();      // ★ 攻撃モーション発動！
 					enemy_->OnDamage(); 
+					toge_->Start(enemy_->GetWorldPosition()); // ←追加：敵の下からとげ出現！
 				}
 				if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
 					enemyHP_--;          // 弱攻撃
@@ -200,9 +218,12 @@ void GameScene::Update() {
 				}
 				if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
 					playerHP_--; // ミス（自分にダメージ）
-					player_->OnDamage(); // ★ ダメージリアクション発動！	
+					player_->OnDamage(); // ★ ダメージリアクション発動！
+					StartCameraShake();
 				}
 			}
+
+
 		}
 	}
 
@@ -219,10 +240,33 @@ void GameScene::Update() {
 	enemy_->Update();
 
 	//------------------------------------------
+	// 攻撃の更新処理
+	//------------------------------------------
+	toge_->Update();
+	kami_->Update();
+
+
+	//------------------------------------------
 	// カメラ更新
 	//------------------------------------------
 	camera_.translation_ = Vector3(0.0f, 0.0f, -10.0f);
 	camera_.UpdateMatrix();
+
+	if (isCameraShaking_) {
+		cameraShakeTimer_--;
+		camera_.translation_.x = defaultCameraPos_.x + (rand() % 100 / 100.0f - 0.5f) * cameraShakePower_;
+		camera_.translation_.y = defaultCameraPos_.y + (rand() % 100 / 100.0f - 0.5f) * cameraShakePower_;
+
+		if (cameraShakeTimer_ <= 0) {
+			isCameraShaking_ = false;
+			camera_.translation_ = defaultCameraPos_;
+		}
+	} else {
+		camera_.translation_ = defaultCameraPos_;
+	}
+	camera_.UpdateMatrix();
+
+	
 
 }
 
@@ -241,6 +285,8 @@ void GameScene::Draw() {
 
 		player_->Draw(); // プレイヤー
 		enemy_->Draw();  // 敵
+		toge_->Draw();//とげ攻撃
+		kami_->Draw();//雷攻撃
 
 		Model::PostDraw();
 
@@ -254,12 +300,12 @@ void GameScene::Draw() {
 		attackArrowSprite_->Draw();
 
 		// プレイヤーの残りHP分ハートを描画
-		for (int i = 0; i < playerHPPoint_; i++) {
+		for (int i = 0; i < playerHP_; i++) {
 			hearts_[i]->Draw();
 		}
 
 		// 敵の残りHP分ハートを描画
-		for (int i = 0; i < enemyHPPoint_; i++) {
+		for (int i = 0; i < enemyHP_; i++) {
 			enemyHearts_[i]->Draw();
 		}
 
@@ -298,11 +344,25 @@ GameScene::~GameScene() {
 	enemyHearts_.clear();
 
 	//------------------------------------------
+	// 攻撃の解放
+	//------------------------------------------
+	//とげ攻撃
+	delete toge_;
+	delete modelToge_;
+
+	//雷攻撃
+	delete kami_;
+	delete modelKami_;
+
+
+	//------------------------------------------
 	// （デバッグカメラは未使用）
 	//------------------------------------------
 	// delete debugCamera_;
 }
 
 void GameScene::StartCameraShake() {
-
+	isCameraShaking_ = true;
+	cameraShakeTimer_ = 30;   // 揺れるフレーム数
+	cameraShakePower_ = 0.1f; // 揺れの強さ
 }

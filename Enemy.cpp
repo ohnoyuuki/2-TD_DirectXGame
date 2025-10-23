@@ -7,14 +7,14 @@ void Enemy::Initialize(Model* model,Camera* camera) {
 	assert(model);
 	model_ = model;
 	camera_ = camera;
-	worldtransform_.Initialize();
+	worldTransform_.Initialize();
 
-	worldtransform_.translation_ = {5.5f, 0.0f, 0.0f}; // X, Y, Z の位置
-	worldtransform_.scale_ = {1.0f, 1.0f, 1.0f};        // 大きさ
-	worldtransform_.rotation_ = {0.0f, -900.0f, 0.0f};   // 回転
+	worldTransform_.translation_ = {5.5f, 0.0f, 0.0f};   // X, Y, Z の位置
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};       // 大きさ
+	worldTransform_.rotation_ = {0.0f, -900.0f, 0.0f};   // 回転
 
 	// 行列をGPUに転送（初期化時）
-	worldtransform_.TransferMatrix();
+	worldTransform_.TransferMatrix();
 }
 
 void Enemy::Update() {
@@ -26,21 +26,21 @@ void Enemy::Update() {
 		 // 縦揺れ：sin波を利用して上下にブルッと動く
 		float shakeAmplitude = 0.15f; // 揺れの大きさ
 		float shakeSpeed = 0.6f;      // 揺れる速さ
-		worldtransform_.translation_.y = sinf(damageTimer_ * shakeSpeed) * shakeAmplitude;
+		worldTransform_.translation_.y = sinf(damageTimer_ * shakeSpeed) * shakeAmplitude;
 
 		damageTimer_--;
 
 		// ノックバック終了
 		if (damageTimer_ <= 0) {
 			isDamaged_ = false;
-			worldtransform_.translation_.x = 5.5f; // 元の位置に戻す
+			worldTransform_.translation_.x = 5.5f; // 元の位置に戻す
 		}
 	}
 
 
-	worldtransform_.matWorld_ = MakeAffineMatrix(worldtransform_.scale_, worldtransform_.rotation_, worldtransform_.translation_);
+	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 	// 行列を定数バッファに転送
-	worldtransform_.TransferMatrix();
+	worldTransform_.TransferMatrix();
 }
 
 void Enemy::Draw() {
@@ -49,7 +49,7 @@ void Enemy::Draw() {
 	if (damageTimer_ > 0 && (damageTimer_ / 3) % 2 == 0)
 		return;
 
-	model_->Draw(worldtransform_, *camera_);
+	model_->Draw(worldTransform_, *camera_);
 
 }
 
