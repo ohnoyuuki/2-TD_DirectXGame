@@ -110,6 +110,9 @@ void GameScene::Initialize() {
 	kami_->Initialize(modelKami_, &camera_);
 	//---------------------------------
 
+	
+
+
 }
 
 //==================================================
@@ -208,6 +211,7 @@ void GameScene::Update() {
 					enemy_->OnDamage(); 
 					StartCameraShake();
 					kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
+					;
 
 				}
 				if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
@@ -269,6 +273,12 @@ void GameScene::Update() {
 	toge_->Update();
 	kami_->Update();
 
+	//------------------------------------------
+
+
+	
+
+
 
 	//------------------------------------------
 	// カメラ更新
@@ -311,6 +321,8 @@ void GameScene::Draw() {
 		enemy_->Draw();  // 敵
 		toge_->Draw();//とげ攻撃
 		kami_->Draw();//雷攻撃
+		
+
 
 		Model::PostDraw();
 

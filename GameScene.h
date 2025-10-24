@@ -10,6 +10,7 @@
 #include <array>
 #include <numbers>
 
+
 using namespace KamataEngine;
 using namespace MathUtility;
 
@@ -93,6 +94,8 @@ private:
 	//雷攻撃の3Dモデルデータ
 	Model* modelKami_ = nullptr;
 
+
+	
 
 
 	//==================================================
