@@ -5,6 +5,7 @@
 #include "Player.h"
 #include"toge.h"
 #include"kaminari.h"
+#include"beam.h"
 #include "input/Input.h"
 #include <algorithm>
 #include <array>
@@ -95,7 +96,7 @@ private:
 	Model* modelKami_ = nullptr;
 
 	// ビーム攻撃本体
-	
+	Beam beam_;
 
 
 	// ビーム攻撃の3Dモデルデータ

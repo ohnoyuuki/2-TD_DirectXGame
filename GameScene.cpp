@@ -115,7 +115,7 @@ void GameScene::Initialize() {
 	
 
 	// 3Dモデル読み込み
-	modelBeam_ = Model::CreateFromOBJ("toge");
+	modelBeam_ = Model::CreateFromOBJ("beam");
 
 
 	//---------------------------------
