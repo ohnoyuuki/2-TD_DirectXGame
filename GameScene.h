@@ -94,9 +94,19 @@ private:
 	//雷攻撃の3Dモデルデータ
 	Model* modelKami_ = nullptr;
 
-
+	// ビーム攻撃本体
 	
 
+
+	// ビーム攻撃の3Dモデルデータ
+	Model* modelBeam_ = nullptr;
+
+
+
+	////Playerから発射する位置
+	//Vector3 playerPos = player_->worldTransform_.translation_;
+
+	
 
 	//==================================================
 	// ▼ 攻撃ゲージ関連

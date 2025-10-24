@@ -23,9 +23,13 @@ public:
 	// 攻撃をしたときに呼ばれる関数
 	void OnAttack();
 
-private:
 	// ワールド変換データ
 	WorldTransform worldTransform_;
+
+	WorldTransform& GetWorldTransform() { return worldTransform_; }
+
+private:
+	
 	// モデル
 	Model* model_ = nullptr;
 	// カメラ

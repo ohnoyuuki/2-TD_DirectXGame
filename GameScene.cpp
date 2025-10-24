@@ -104,10 +104,20 @@ void GameScene::Initialize() {
 	toge_->Initialize(modelToge_,&camera_);
 	//雷攻撃
 	// 3Dモデル読み込み
-	modelKami_ = Model::CreateFromOBJ("toge");
+	modelKami_ = Model::CreateFromOBJ("beam");
 
 	kami_ = new Kaminari();
 	kami_->Initialize(modelKami_, &camera_);
+
+	//ビーム攻撃
+	
+	
+	
+
+	// 3Dモデル読み込み
+	modelBeam_ = Model::CreateFromOBJ("toge");
+
+
 	//---------------------------------
 
 	
@@ -224,6 +234,9 @@ void GameScene::Update() {
 					enemyHP_--;          // 弱攻撃
 					player_->OnAttack(); // ★ 攻撃モーション発動！
 					enemy_->OnDamage(); 
+
+					
+
 				}
 				if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
 					playerHP_--; // ミス（自分にダメージ）
@@ -272,6 +285,8 @@ void GameScene::Update() {
 	//------------------------------------------
 	toge_->Update();
 	kami_->Update();
+	
+
 
 	//------------------------------------------
 
@@ -390,6 +405,9 @@ GameScene::~GameScene() {
 	delete kami_;
 	delete modelKami_;
 
+	//ビーム攻撃
+	
+	delete modelBeam_;
 
 	//------------------------------------------
 	// （デバッグカメラは未使用）
