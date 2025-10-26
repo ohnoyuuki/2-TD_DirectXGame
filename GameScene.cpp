@@ -239,7 +239,7 @@ void GameScene::Update() {
 					enemy_->OnDamage(); 
 					// ★ ビーム発射！
 					Vector3 startPos = player_->GetWorldTransform().translation_;
-					startPos.x += 2.0f; // 自機前に出す
+					startPos.x += 8.0f; // 自機前に出す
 					beam_->Activate(startPos);
 
 				}
