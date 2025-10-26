@@ -116,9 +116,14 @@ void GameScene::Initialize() {
 	beam_ = new Beam();
 	beam_->Initialize(modelBeam_,&camera_);
 	
-	
+	//サウンドデータの読み込み
+	soundTogeHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
 
-	
+	//音声再生
+	Audio::GetInstance()->PlayWave(soundTogeHandle_);
+
+	//音声再生
+	voiceTogeHandle_ = Audio::GetInstance()->PlayWave(soundTogeHandle_, true);
 
 
 	//---------------------------------

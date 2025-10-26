@@ -180,4 +180,12 @@ private:
 
 	// カメラの元位置を保存
 	Vector3 defaultCameraPos_ = {0.0f, 1.0f, -10.0f};
+
+	//音声ファイル
+	uint32_t soundTogeHandle_ = 0;
+
+	//音声再生ハンドル
+	uint32_t voiceTogeHandle_ = 0;
+
+
 };
