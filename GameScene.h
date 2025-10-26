@@ -57,6 +57,11 @@ private:
 	// 敵のハートスプライト（HP表示用）を複数管理
 	std::vector<Sprite*> enemyHearts_;
 
+	// ルール説明
+	uint32_t gameRuruHandle_ = 0;
+	Sprite* gameRuruSprite_ = nullptr;
+
+
 	//HP管理
 	int playerHPPoint_ = 5;
 

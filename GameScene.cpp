@@ -80,7 +80,7 @@ void GameScene::Initialize() {
 	//-------------------------------
 
 	// 敵3Dモデル読み込み
-	modelEnemy_ = Model::CreateFromOBJ("enemy");
+	modelEnemy_ = Model::CreateFromOBJ("kame");
 
 	// 敵オブジェクト生成
 	enemy_ = new Enemy();
