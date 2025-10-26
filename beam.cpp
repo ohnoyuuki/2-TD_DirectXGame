@@ -45,5 +45,5 @@ void Beam::Draw() {
 void Beam::Activate(const Vector3& startPos) {
 	worldTransform_.translation_ = startPos;
 	isActive_ = true;
-	timer_ = 10; // 表示フレーム(好みで調整)
+	timer_ = 10; // 表示フレーム
 }

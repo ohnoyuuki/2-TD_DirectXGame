@@ -109,13 +109,16 @@ void GameScene::Initialize() {
 	kami_ = new Kaminari();
 	kami_->Initialize(modelKami_, &camera_);
 
+	// 3Dモデル読み込み
+	modelBeam_ = Model::CreateFromOBJ("beam");
+
 	//ビーム攻撃
-	
+	beam_ = new Beam();
+	beam_->Initialize(modelBeam_,&camera_);
 	
 	
 
-	// 3Dモデル読み込み
-	modelBeam_ = Model::CreateFromOBJ("beam");
+	
 
 
 	//---------------------------------
@@ -234,8 +237,10 @@ void GameScene::Update() {
 					enemyHP_--;          // 弱攻撃
 					player_->OnAttack(); // ★ 攻撃モーション発動！
 					enemy_->OnDamage(); 
-
-					
+					// ★ ビーム発射！
+					Vector3 startPos = player_->GetWorldTransform().translation_;
+					startPos.x += 2.0f; // 自機前に出す
+					beam_->Activate(startPos);
 
 				}
 				if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
@@ -285,6 +290,7 @@ void GameScene::Update() {
 	//------------------------------------------
 	toge_->Update();
 	kami_->Update();
+	beam_->Update();
 	
 
 
@@ -336,7 +342,7 @@ void GameScene::Draw() {
 		enemy_->Draw();  // 敵
 		toge_->Draw();//とげ攻撃
 		kami_->Draw();//雷攻撃
-		
+		beam_->Draw();
 
 
 		Model::PostDraw();

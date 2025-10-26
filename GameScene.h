@@ -96,7 +96,7 @@ private:
 	Model* modelKami_ = nullptr;
 
 	// ビーム攻撃本体
-	Beam beam_;
+	Beam* beam_ = nullptr;
 
 
 	// ビーム攻撃の3Dモデルデータ
