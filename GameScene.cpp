@@ -104,7 +104,7 @@ void GameScene::Initialize() {
 	toge_->Initialize(modelToge_,&camera_);
 	//雷攻撃
 	// 3Dモデル読み込み
-	modelKami_ = Model::CreateFromOBJ("beam");
+	modelKami_ = Model::CreateFromOBJ("kaminari");
 
 	kami_ = new Kaminari();
 	kami_->Initialize(modelKami_, &camera_);
@@ -342,7 +342,7 @@ void GameScene::Draw() {
 		enemy_->Draw();  // 敵
 		toge_->Draw();//とげ攻撃
 		kami_->Draw();//雷攻撃
-		beam_->Draw();
+		beam_->Draw();//ビーム攻撃
 
 
 		Model::PostDraw();

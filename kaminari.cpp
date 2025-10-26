@@ -8,7 +8,7 @@ void Kaminari::Initialize(Model* model, Camera* camera) {
 
 	worldTransform_.translation_ = {5.0f, 10.0f, 0.0f}; // X, Y, Z の位置
 	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};        // 大きさ
-	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};   // 回転
+	worldTransform_.rotation_ = {30.0f, 0.0f, 0.0f};   // 回転
 
 	// 行列をGPUに転送（初期化時）
 	worldTransform_.TransferMatrix();
