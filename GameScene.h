@@ -56,7 +56,7 @@ private:
 	// 敵のハートスプライト（HP表示用）を複数管理
 	std::vector<Sprite*> enemyHearts_;
 
-	//タイトル
+	// タイトル
 	uint32_t gameTitleHandle_ = 0;
 	Sprite* gameTitleSprite_ = nullptr;
 
@@ -64,14 +64,13 @@ private:
 	uint32_t gameRuruHandle_ = 0;
 	Sprite* gameRuruSprite_ = nullptr;
 
-	//ゲームクリア
+	// ゲームクリア
 	uint32_t gameClearHandle_ = 0;
 	Sprite* gameClearSprite_ = nullptr;
 
-	//ゲームオーバ
+	// ゲームオーバ
 	uint32_t gameOverHandle_ = 0;
 	Sprite* gameOverSprite_ = nullptr;
-
 
 	// HP管理
 	int playerHPPoint_ = 5;
@@ -102,8 +101,6 @@ private:
 	Model* enemyModel1_ = nullptr;
 	Model* enemyModel2_ = nullptr;
 	Model* enemyModel3_ = nullptr;
-
-
 
 	// とげ攻撃本体
 	Toge* toge_ = nullptr;
@@ -194,14 +191,20 @@ private:
 	// 音声//
 
 	// 音声ファイル
+	uint32_t soundTitleHandle_ = 0;
+	uint32_t soundGameHandle_ = 0;
+	uint32_t soundClearHandle_ = 0;
+	uint32_t soundOverHandle_ = 0;
+
+	// 攻撃効果音
 	uint32_t soundBotanHandle_ = 0;
 	uint32_t soundTogeHandle_ = 0;
 	uint32_t soundBeamHandle_ = 0;
 	uint32_t soundKamiHandle_ = 0;
+	//----------------------------
 
 	// 音声再生ハンドル
-	uint32_t voiceBotanHandle_ = 0;
-	uint32_t voiceTogeHandle_ = 0;
-	uint32_t voiceBeamHandle_ = 0;
-	uint32_t voiceKamiHandle_ = 0;
+	uint32_t voiceTitleHandle_ = 0;
+
+	
 };

@@ -135,6 +135,16 @@ void GameScene::Initialize() {
 	beam_->Initialize(modelBeam_, &camera_);
 
 	// サウンドデータの読み込み
+	soundTitleHandle_ = Audio::GetInstance()->LoadWave("Title.mp3");
+	soundGameHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
+	soundClearHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
+	soundOverHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
+
+	//音声再生
+	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
+
+
+	//効果音
 	soundBotanHandle_ = Audio::GetInstance()->LoadWave("botan.mp3");
 	soundTogeHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
 	soundBeamHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
@@ -143,7 +153,6 @@ void GameScene::Initialize() {
 
 bool canPress = true;
 
-// 更新
 void GameScene::Update() {
 	//==================================================
 	// 更新処理
@@ -151,6 +160,7 @@ void GameScene::Update() {
 	
 	// タイトルシーン
 	if (titleScene == 1) {
+		
 		gameTitleSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			canPress = false; // 一時的に無効化
@@ -158,6 +168,9 @@ void GameScene::Update() {
 			gameClear = 0;
 			gameOver = 0;
 			gameRuruScene = 1;
+			//音声停止
+			Audio::GetInstance()->StopWave(voiceTitleHandle_);
+
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
 		}
@@ -179,6 +192,7 @@ void GameScene::Update() {
 
 	// ステージ
 	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
+		// voiceStageHandle_ = Audio::GetInstance()->PlayWave(stageBgmHandle_, true);
 		// 自キャラ------------------------------------------
 		//  スペースキーが押された瞬間に HP を1減らす
 		if (playerAttackTurn > 0) {
@@ -275,6 +289,7 @@ void GameScene::Update() {
 
 			// ネクストステージ
 			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
+				
 				stageEnemy2 = 1;
 				playerHPPoint_ += 1;
 				enemyHPPoint_ = 5;
