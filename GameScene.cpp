@@ -80,7 +80,7 @@ void GameScene::Initialize() {
 
 	//// ゲームオーバ
 	gameOverHandle_ = TextureManager::Load("TD2_GameOver1.png");
-	gameOverSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
+	gameOverSprite_ = Sprite::Create(gameOverHandle_, {0, 0});
 
 
 
