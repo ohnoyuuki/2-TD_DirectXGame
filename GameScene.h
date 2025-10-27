@@ -86,6 +86,12 @@ private:
 	// 敵の3Dモデルデータ
 	Model* modelEnemy_ = nullptr;
 
+	Model* enemyModel1_ = nullptr;
+	Model* enemyModel2_ = nullptr;
+	Model* enemyModel3_ = nullptr;
+
+
+
 	// とげ攻撃本体
 	Toge* toge_ = nullptr;
 
@@ -172,9 +178,17 @@ private:
 	// カメラの元位置を保存
 	Vector3 defaultCameraPos_ = {0.0f, 1.0f, -10.0f};
 
+	// 音声//
+
 	// 音声ファイル
+	uint32_t soundBotanHandle_ = 0;
 	uint32_t soundTogeHandle_ = 0;
+	uint32_t soundBeamHandle_ = 0;
+	uint32_t soundKamiHandle_ = 0;
 
 	// 音声再生ハンドル
+	uint32_t voiceBotanHandle_ = 0;
 	uint32_t voiceTogeHandle_ = 0;
+	uint32_t voiceBeamHandle_ = 0;
+	uint32_t voiceKamiHandle_ = 0;
 };

@@ -79,6 +79,10 @@ void GameScene::Initialize() {
 	// 敵キャラ設定
 	//-------------------------------
 
+	enemyModel1_ = Model::CreateFromOBJ("otama");    // ステージ1オタマジャクシ
+	enemyModel2_ = Model::CreateFromOBJ("kame"); // ステージ2亀
+	enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
+
 	// 敵3Dモデル読み込み
 	modelEnemy_ = Model::CreateFromOBJ("kame");
 
@@ -115,6 +119,12 @@ void GameScene::Initialize() {
 	// ビーム攻撃
 	beam_ = new Beam();
 	beam_->Initialize(modelBeam_, &camera_);
+
+	// サウンドデータの読み込み
+	soundBotanHandle_ = Audio::GetInstance()->LoadWave("botan.mp3");
+	soundTogeHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
+	soundBeamHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
+	soundKamiHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
 }
 
 bool canPress = true;
@@ -130,6 +140,8 @@ void GameScene::Update() {
 			canPress = false; // 一時的に無効化
 			titleScene = 0;
 			gameRuruScene = 1;
+			// 音声再生
+			Audio::GetInstance()->PlayWave(soundBotanHandle_);
 		}
 	}
 
@@ -141,6 +153,8 @@ void GameScene::Update() {
 			stageEnemy1 = 1;
 			playerHPPoint_ = 5;
 			enemyHPPoint_ = 5;
+			// 音声再生
+			Audio::GetInstance()->PlayWave(soundBotanHandle_);
 		}
 	}
 
@@ -188,11 +202,20 @@ void GameScene::Update() {
 						enemyHPPoint_--;     // 弱攻撃
 						player_->OnAttack(); // ★ 攻撃モーション発動！
 						enemy_->OnDamage();
+						// ★ ビーム発射！
+						Vector3 startPos = player_->GetWorldTransform().translation_;
+						startPos.x += 7.0f; // 自機前に出す
+						beam_->Activate(startPos);
+						// 音声再生
+						Audio::GetInstance()->PlayWave(soundBeamHandle_);
 					}
 					if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
 						enemyHPPoint_ -= attackGauge2; // 中攻撃
 						player_->OnAttack();           // ★ 攻撃モーション発動！
 						enemy_->OnDamage();
+						toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
+						// 音声再生
+						Audio::GetInstance()->PlayWave(soundTogeHandle_);
 					}
 					if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
 						enemyHPPoint_ -= attackGauge3; // 強攻撃
@@ -201,13 +224,16 @@ void GameScene::Update() {
 						enemy_->OnDamage();
 						StartCameraShake();
 						kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
-						;
+						// 音声再生
+						Audio::GetInstance()->PlayWave(soundKamiHandle_);
 					}
 					if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
 						enemyHPPoint_ -= attackGauge2; // 中攻撃
 						player_->OnAttack();           // ★ 攻撃モーション発動！
 						enemy_->OnDamage();
 						toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
+						// 音声再生
+						Audio::GetInstance()->PlayWave(soundTogeHandle_);
 					}
 					if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
 						enemyHPPoint_--;     // 弱攻撃
@@ -215,8 +241,10 @@ void GameScene::Update() {
 						enemy_->OnDamage();
 						// ★ ビーム発射！
 						Vector3 startPos = player_->GetWorldTransform().translation_;
-						startPos.x += 2.0f; // 自機前に出す
+						startPos.x += 7.0f; // 自機前に出す
 						beam_->Activate(startPos);
+						// 音声再生
+						Audio::GetInstance()->PlayWave(soundBeamHandle_);
 					}
 					if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
 						playerHPPoint_--;    // ミス（自分にダメージ）
@@ -229,18 +257,20 @@ void GameScene::Update() {
 			// ネクストステージ
 			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
 				stageEnemy2 = 1;
-				playerHPPoint_ = playerHPPoint_ += 1;
+				playerHPPoint_ += 1;
 				enemyHPPoint_ = 5;
 				playerAttackTurn = 3;
 				stageEnemy1 = 0;
+				enemy_->Initialize(enemyModel2_, &camera_); 
 			}
 			// ネクストステージ
 			if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
 				stageEnemy3 = 1;
-				playerHPPoint_ = playerHPPoint_ += 1;
+				playerHPPoint_ += 1;
 				enemyHPPoint_ = 5;
 				playerAttackTurn = 3;
 				stageEnemy2 = 0;
+				enemy_->Initialize(enemyModel3_, &camera_); 
 			}
 			// ゲームクリアへ
 			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
@@ -302,6 +332,9 @@ void GameScene::Update() {
 		camera_.translation_ = defaultCameraPos_;
 	}
 	camera_.UpdateMatrix();
+
+	playerHPPoint_ = std::clamp(playerHPPoint_, 0, (int)hearts_.size());
+	enemyHPPoint_ = std::clamp(enemyHPPoint_, 0, (int)enemyHearts_.size());
 }
 
 //==================================================
@@ -342,13 +375,20 @@ void GameScene::Draw() {
 		attackSprite_->Draw();
 		attackArrowSprite_->Draw();
 
+		int pMax = (int)hearts_.size();
+		int eMax = (int)enemyHearts_.size();
+
+		int pDraw = std::clamp(playerHPPoint_, 0, pMax);
+		int eDraw = std::clamp(enemyHPPoint_, 0, eMax);
+
+
 		// プレイヤーの残りHP分ハートを描画
-		for (int i = 0; i < playerHPPoint_; i++) {
+		for (int i = 0; i < pDraw; i++) {
 			hearts_[i]->Draw();
 		}
 
 		// 敵の残りHP分ハートを描画
-		for (int i = 0; i < enemyHPPoint_; i++) {
+		for (int i = 0; i < eDraw; i++) {
 			enemyHearts_[i]->Draw();
 		}
 
@@ -382,6 +422,10 @@ GameScene::~GameScene() {
 	//------------------------------------------
 	delete enemy_;
 	delete modelEnemy_;
+
+	delete enemyModel1_;
+	delete enemyModel2_;
+	delete enemyModel3_;
 
 	for (auto& enemyHeart : enemyHearts_) {
 		delete enemyHeart;
