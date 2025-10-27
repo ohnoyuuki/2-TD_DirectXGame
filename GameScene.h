@@ -64,6 +64,15 @@ private:
 	uint32_t gameRuruHandle_ = 0;
 	Sprite* gameRuruSprite_ = nullptr;
 
+	//ゲームクリア
+	uint32_t gameClearHandle_ = 0;
+	Sprite* gameClearSprite_ = nullptr;
+
+	//ゲームオーバ
+	uint32_t gameOverHandle_ = 0;
+	Sprite* gameOverSprite_ = nullptr;
+
+
 	// HP管理
 	int playerHPPoint_ = 5;
 

@@ -74,6 +74,14 @@ void GameScene::Initialize() {
 	gameRuruHandle_ = TextureManager::Load("TD2_GameRuru1.png");
 	gameRuruSprite_ = Sprite::Create(gameRuruHandle_, {0, 0});
 
+	//ゲームクリア
+	gameClearHandle_ = TextureManager::Load("TD2_GameClear1.png");
+	gameClearSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
+
+	//// ゲームオーバ
+	//gameOverHandle_ = TextureManager::Load("TD2_GameClear1.png");
+	//gameOverSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
+
 
 
 	//-------------------------------
@@ -283,6 +291,7 @@ void GameScene::Update() {
 			}
 			// ゲームクリアへ
 			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
+				gameClearSprite_->SetPosition({0, 0});
 				gameClear = 1;
 				stageEnemy3 = 0;
 			}
@@ -302,6 +311,59 @@ void GameScene::Update() {
 			}
 		}
 	}
+
+
+	if (gameClear == 1) {
+
+		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			// 全リセット ------------------------
+			titleScene = 1;
+			gameClear = 0;
+
+			stageEnemy1 = 0;
+			stageEnemy2 = 0;
+			stageEnemy3 = 0;
+
+			playerHPPoint_ = 5;
+			enemyHPPoint_ = 5;
+			playerAttackTurn = 3;
+
+			attackArrowY = 576 - 32; // 矢印位置リセット
+			arrowDirection = -5;
+
+			// 敵をステージ1へ戻す
+			player_->Initialize(modelPlayer_, &camera_);
+			enemy_->Initialize(enemyModel1_, &camera_);
+		}
+	}
+
+	//===============================
+	// ゲームオーバー後：ENTERでタイトルへ
+	//===============================
+	if (gameOver == 1) {
+
+		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			// 全リセット ------------------------
+			titleScene = 1;
+			gameOver = 0;
+
+			stageEnemy1 = 0;
+			stageEnemy2 = 0;
+			stageEnemy3 = 0;
+
+			playerHPPoint_ = 5;
+			enemyHPPoint_ = 5;
+			playerAttackTurn = 3;
+
+			attackArrowY = 576 - 32; // 矢印位置リセット
+			arrowDirection = -5;
+
+			// 敵をステージ1へ戻す
+			player_->Initialize(modelPlayer_, &camera_);
+			enemy_->Initialize(enemyModel1_, &camera_);
+		}
+	}
+
 	// 矢印スプライトの座標を更新
 	attackArrowSprite_->SetPosition({attackArrowX, attackArrowY});
 
@@ -353,9 +415,7 @@ void GameScene::Draw() {
 
 	if (titleScene == 1) {
 		Sprite::PreDraw();
-
 		gameTitleSprite_->Draw();
-
 		// スプライト描画後処理
 		Sprite::PostDraw();
 	}
@@ -363,14 +423,18 @@ void GameScene::Draw() {
 	if (gameRuruScene == 1) {
 		// スプライト描画前処理
 		Sprite::PreDraw();
-
-		
 		gameRuruSprite_->Draw();
-		
-
 		// スプライト描画後処理
 		Sprite::PostDraw();
 	}
+
+	if (gameClear == 1) {
+		Sprite::PreDraw();
+		gameClearSprite_->Draw();
+		Sprite::PostDraw();
+	}
+
+
 
 	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
 		//------------------------------------------
