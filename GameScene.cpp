@@ -81,10 +81,10 @@ void GameScene::Initialize() {
 
 	enemyModel1_ = Model::CreateFromOBJ("otama");    // ステージ1オタマジャクシ
 	enemyModel2_ = Model::CreateFromOBJ("kame"); // ステージ2亀
-	enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
+	//enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
 
 	// 敵3Dモデル読み込み
-	modelEnemy_ = Model::CreateFromOBJ("kame");
+	//modelEnemy_ = Model::CreateFromOBJ("kame");
 
 	// 敵オブジェクト生成
 	enemy_ = new Enemy();
@@ -270,7 +270,7 @@ void GameScene::Update() {
 				enemyHPPoint_ = 5;
 				playerAttackTurn = 3;
 				stageEnemy2 = 0;
-				enemy_->Initialize(enemyModel3_, &camera_); 
+				
 			}
 			// ゲームクリアへ
 			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
