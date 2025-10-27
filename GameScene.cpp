@@ -351,11 +351,20 @@ void GameScene::Update() {
 //==================================================
 void GameScene::Draw() {
 
+	if (titleScene == 1) {
+		Sprite::PreDraw();
+
+		gameTitleSprite_->Draw();
+
+		// スプライト描画後処理
+		Sprite::PostDraw();
+	}
+
 	if (gameRuruScene == 1) {
 		// スプライト描画前処理
 		Sprite::PreDraw();
 
-		gameTitleSprite_->Draw();
+		
 		gameRuruSprite_->Draw();
 		
 
