@@ -84,7 +84,7 @@ void GameScene::Initialize() {
 	//enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
 
 	// 敵3Dモデル読み込み
-	//modelEnemy_ = Model::CreateFromOBJ("kame");
+	modelEnemy_ = enemyModel1_;
 
 	// 敵オブジェクト生成
 	enemy_ = new Enemy();
@@ -421,8 +421,7 @@ GameScene::~GameScene() {
 	// 敵関連の解放
 	//------------------------------------------
 	delete enemy_;
-	delete modelEnemy_;
-
+	
 	delete enemyModel1_;
 	delete enemyModel2_;
 	delete enemyModel3_;
