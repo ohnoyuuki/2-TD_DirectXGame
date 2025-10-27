@@ -1,18 +1,12 @@
 #include "GameScene.h"
 
-//==================================================
-// 初期化処理
-//==================================================
+// 初期化
 void GameScene::Initialize() {
-
-
-	//シーン初期化
+	// シーン初期化
 	titleScene = true;
 	if (stageEnemy1 == 1) {
 		playerHP_ = 7;
 	}
-
-	
 
 	//-------------------------------
 	// 自機のHPハート設定
@@ -58,6 +52,8 @@ void GameScene::Initialize() {
 	// モデルとカメラを渡して初期化
 	player_->Initialize(modelPlayer_, &camera_);
 
+	//-------------------------------------
+
 	//-------------------------------
 	// 攻撃ゲージの設定
 	//-------------------------------
@@ -69,6 +65,10 @@ void GameScene::Initialize() {
 	// 攻撃ゲージ上を動く矢印画像読み込み
 	attackArrowHandle_ = TextureManager::Load("RighAttackArrow.png");
 	attackArrowSprite_ = Sprite::Create(attackArrowHandle_, {attackArrowX, attackArrowY});
+
+	// ルール説明
+	gameRuruHandle_ = TextureManager::Load("TD2_GameRuru1.png");
+	gameRuruSprite_ = Sprite::Create(gameRuruHandle_, {0, 0});
 
 	//-------------------------------
 	// カメラ設定
@@ -95,15 +95,15 @@ void GameScene::Initialize() {
 	//-------------------------------
 	// 攻撃種類
 	//-------------------------------
-	//とげ攻撃
-	//3Dモデル読み込み
+	// とげ攻撃
+	// 3Dモデル読み込み
 	modelToge_ = Model::CreateFromOBJ("toge");
 
 	toge_ = new Toge();
 
-	toge_->Initialize(modelToge_,&camera_);
-	//雷攻撃
-	// 3Dモデル読み込み
+	toge_->Initialize(modelToge_, &camera_);
+	// 雷攻撃
+	//  3Dモデル読み込み
 	modelKami_ = Model::CreateFromOBJ("kaminari");
 
 	kami_ = new Kaminari();
@@ -112,178 +112,162 @@ void GameScene::Initialize() {
 	// 3Dモデル読み込み
 	modelBeam_ = Model::CreateFromOBJ("beam");
 
-	//ビーム攻撃
+	// ビーム攻撃
 	beam_ = new Beam();
-	beam_->Initialize(modelBeam_,&camera_);
-	
-	//サウンドデータの読み込み
-	soundTogeHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
-
-	//音声再生
-	Audio::GetInstance()->PlayWave(soundTogeHandle_);
-
-	//音声再生
-	voiceTogeHandle_ = Audio::GetInstance()->PlayWave(soundTogeHandle_, true);
-
-
-	//---------------------------------
-
-	
-
-
+	beam_->Initialize(modelBeam_, &camera_);
 }
 
-//==================================================
-// 更新処理
-//==================================================
-void GameScene::Update() {
+bool canPress = true;
 
-	//タイトルシーン
+// 更新
+void GameScene::Update() {
+	//==================================================
+	// 更新処理
+	//==================================================
+	// タイトルシーン
 	if (titleScene == 1) {
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			canPress = false; // 一時的に無効化
 			titleScene = 0;
+			gameRuruScene = 1;
+		}
+	}
+
+	// ルール説明
+	else if (gameRuruScene == 1) {
+		gameRuruSprite_->SetPosition({0, 0});
+		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			gameRuruScene = 0;
 			stageEnemy1 = 1;
 			playerHPPoint_ = 5;
 			enemyHPPoint_ = 5;
 		}
 	}
 
-	if (playerHPPoint_ <= 0) {
-		stageEnemy1 = 0;
-		stageEnemy2 = 0;
-		stageEnemy3 = 0;
-		gameOver = 1;
-	}
-
-
-	//------------------------------------------
-	// 攻撃ゲージの矢印の移動処理
-	//------------------------------------------
-
-	// プレイヤーの攻撃ターンが残っているときのみ動作
-	if (playerAttackTurn == 0 && enemyHPPoint_ >= 0) {
-
-		stageEnemy1 = 0;
-		stageEnemy2 = 0;
-		stageEnemy3 = 0;
-		gameOver = 1;
-	}
-
+	// ステージ
 	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
+		// 自キャラ------------------------------------------
+		//  スペースキーが押された瞬間に HP を1減らす
+		if (playerAttackTurn > 0) {
+			attackArrowY += arrowDirection * 2; // 上下移動のスピード（2ピクセル）
 
-		// 矢印のY座標を上下に動かす
-		attackArrowY += arrowDirection * 2;
-
-		// 画面上端で反転
-		if (attackArrowY <= 0) {
-			attackArrowY = 0;
-			arrowDirection = 5; // 下方向に
-		}
-		// 画面下端で反転
-		else if (attackArrowY >= 576) {
-			attackArrowY = 576;
-			arrowDirection = -5; // 上方向に
-		}
-
-
-
-		//------------------------------------------
-		// スペースキーで攻撃判定
-		//------------------------------------------
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-
-
-
-			// 一時停止 → 攻撃判定処理
-			if (arrowDirection == 0) {
-				// 動きを再開（上方向へ）
+			// 画面上端で反転
+			if (attackArrowY <= 0) {
+				attackArrowY = 0;
+				arrowDirection = 5; // 下方向に
+			}
+			// 画面下端で反転
+			else if (attackArrowY >= 576) {
 				attackArrowY = 576;
-				arrowDirection = -5;
-			} else {
-				// 矢印の動きを止めて攻撃処理実行
-				arrowDirection = 0;
+				arrowDirection = -5; // 上方向に
+			}
 
-				// 攻撃ターンを1消費
-				playerAttackTurn--;
+			//------------------------------------------
+			// スペースキーで攻撃判定
+			//------------------------------------------
+			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+				// 一時停止 → 攻撃判定処理
+				if (arrowDirection == 0) {
+					// 動きを再開（上方向へ）
+					attackArrowY = 576;
+					arrowDirection = -5;
+				} else {
+					// 矢印の動きを止めて攻撃処理実行
+					arrowDirection = 0;
 
-				// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
-				if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
-					playerHP_--; // ミス（自分にダメージ）
-					player_->OnDamage(); // ★ ダメージリアクション発動！
-					StartCameraShake();
-				}
-				if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
-					enemyHP_--;          // 弱攻撃
-					player_->OnAttack(); // ★ 攻撃モーション発動！
-					enemy_->OnDamage(); 
-				}
-				if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
-					enemyHP_ -= attackGauge2; // 中攻撃
-					player_->OnAttack();      // ★ 攻撃モーション発動！
-					enemy_->OnDamage(); 
-				}
-				if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
-					enemyHP_ -= attackGauge3; // 強攻撃
-					playerHP_--;
-					player_->OnAttack();      // ★ 攻撃モーション発動！
-					enemy_->OnDamage(); 
-					StartCameraShake();
-					kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
-					;
+					// 攻撃ターンを1消費
+					playerAttackTurn--;
 
-				}
-				if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
-					enemyHP_ -= attackGauge2; // 中攻撃
-					player_->OnAttack();      // ★ 攻撃モーション発動！
-					enemy_->OnDamage(); 
-					toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
-				}
-				if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
-					enemyHP_--;          // 弱攻撃
-					player_->OnAttack(); // ★ 攻撃モーション発動！
-					enemy_->OnDamage(); 
-					// ★ ビーム発射！
-					Vector3 startPos = player_->GetWorldTransform().translation_;
-					startPos.x += 8.0f; // 自機前に出す
-					beam_->Activate(startPos);
-
-				}
-				if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
-					playerHP_--; // ミス（自分にダメージ）
-					player_->OnDamage(); // ★ ダメージリアクション発動！
-					StartCameraShake();
+					// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
+					if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
+						playerHPPoint_--;    // ミス（自分にダメージ）
+						player_->OnDamage(); // ★ ダメージリアクション発動！
+						StartCameraShake();
+					}
+					if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
+						enemyHPPoint_--;     // 弱攻撃
+						player_->OnAttack(); // ★ 攻撃モーション発動！
+						enemy_->OnDamage();
+					}
+					if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
+						enemyHPPoint_ -= attackGauge2; // 中攻撃
+						player_->OnAttack();           // ★ 攻撃モーション発動！
+						enemy_->OnDamage();
+					}
+					if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
+						enemyHPPoint_ -= attackGauge3; // 強攻撃
+						playerHPPoint_--;
+						player_->OnAttack(); // ★ 攻撃モーション発動！
+						enemy_->OnDamage();
+						StartCameraShake();
+						kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
+						;
+					}
+					if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
+						enemyHPPoint_ -= attackGauge2; // 中攻撃
+						player_->OnAttack();           // ★ 攻撃モーション発動！
+						enemy_->OnDamage();
+						toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
+					}
+					if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
+						enemyHPPoint_--;     // 弱攻撃
+						player_->OnAttack(); // ★ 攻撃モーション発動！
+						enemy_->OnDamage();
+						// ★ ビーム発射！
+						Vector3 startPos = player_->GetWorldTransform().translation_;
+						startPos.x += 2.0f; // 自機前に出す
+						beam_->Activate(startPos);
+					}
+					if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
+						playerHPPoint_--;    // ミス（自分にダメージ）
+						player_->OnDamage(); // ★ ダメージリアクション発動！
+						StartCameraShake();
+					}
 				}
 			}
-		}
 
-		if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
-			stageEnemy2 = 1;
-			playerHPPoint_ = playerHPPoint_ += 1;
-			enemyHPPoint_ = 5;
-			playerAttackTurn = 3;
-			stageEnemy1 = 0;
+			// ネクストステージ
+			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
+				stageEnemy2 = 1;
+				playerHPPoint_ = playerHPPoint_ += 1;
+				enemyHPPoint_ = 5;
+				playerAttackTurn = 3;
+				stageEnemy1 = 0;
+			}
+			// ネクストステージ
+			if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
+				stageEnemy3 = 1;
+				playerHPPoint_ = playerHPPoint_ += 1;
+				enemyHPPoint_ = 5;
+				playerAttackTurn = 3;
+				stageEnemy2 = 0;
+			}
+			// ゲームクリアへ
+			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
+				gameClear = 1;
+				stageEnemy3 = 0;
+			}
+			// ゲームオーバーへ
+			if (playerHPPoint_ <= 0) {
+				stageEnemy1 = 0;
+				stageEnemy2 = 0;
+				stageEnemy3 = 0;
+				gameOver = 1;
+			}
+			// ゲームオーバーへ
+			if (playerAttackTurn == 0 && enemyHPPoint_ >= 0) {
+				stageEnemy1 = 0;
+				stageEnemy2 = 0;
+				stageEnemy3 = 0;
+				gameOver = 1;
+			}
 		}
-		if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
-			stageEnemy3 = 1;
-			playerHPPoint_ = playerHPPoint_ += 1;
-			enemyHPPoint_ = 5;
-			playerAttackTurn = 3;
-			stageEnemy2 = 0;
-		}
-		if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
-			gameClear = 1;
-			stageEnemy3 = 0;
-		}
-
-		
 	}
-
 	// 矢印スプライトの座標を更新
 	attackArrowSprite_->SetPosition({attackArrowX, attackArrowY});
 
 	// 攻撃ゲージライン位置を更新
 	attackGaugeLain = attackArrowY + 24;
-
 	//------------------------------------------
 	// プレイヤー・敵の更新処理
 	//------------------------------------------
@@ -296,15 +280,8 @@ void GameScene::Update() {
 	toge_->Update();
 	kami_->Update();
 	beam_->Update();
-	
-
 
 	//------------------------------------------
-
-
-	
-
-
 
 	//------------------------------------------
 	// カメラ更新
@@ -325,9 +302,6 @@ void GameScene::Update() {
 		camera_.translation_ = defaultCameraPos_;
 	}
 	camera_.UpdateMatrix();
-
-	
-
 }
 
 //==================================================
@@ -335,9 +309,17 @@ void GameScene::Update() {
 //==================================================
 void GameScene::Draw() {
 
+	if (gameRuruScene == 1) {
+		// スプライト描画前処理
+		Sprite::PreDraw();
+
+		gameRuruSprite_->Draw();
+
+		// スプライト描画後処理
+		Sprite::PostDraw();
+	}
 
 	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
-
 		//------------------------------------------
 		// 3Dモデル描画
 		//------------------------------------------
@@ -345,10 +327,9 @@ void GameScene::Draw() {
 
 		player_->Draw(); // プレイヤー
 		enemy_->Draw();  // 敵
-		toge_->Draw();//とげ攻撃
-		kami_->Draw();//雷攻撃
-		beam_->Draw();//ビーム攻撃
-
+		toge_->Draw();   // とげ攻撃
+		kami_->Draw();   // 雷攻撃
+		beam_->Draw();   // ビーム攻撃
 
 		Model::PostDraw();
 
@@ -362,15 +343,16 @@ void GameScene::Draw() {
 		attackArrowSprite_->Draw();
 
 		// プレイヤーの残りHP分ハートを描画
-		for (int i = 0; i < playerHP_; i++) {
+		for (int i = 0; i < playerHPPoint_; i++) {
 			hearts_[i]->Draw();
 		}
 
 		// 敵の残りHP分ハートを描画
-		for (int i = 0; i < enemyHP_; i++) {
+		for (int i = 0; i < enemyHPPoint_; i++) {
 			enemyHearts_[i]->Draw();
 		}
 
+		// スプライト描画後処理
 		Sprite::PostDraw();
 	}
 }
@@ -393,6 +375,7 @@ GameScene::~GameScene() {
 
 	delete attackSprite_;
 	delete attackArrowSprite_;
+	delete gameRuruSprite_;
 
 	//------------------------------------------
 	// 敵関連の解放
@@ -408,16 +391,16 @@ GameScene::~GameScene() {
 	//------------------------------------------
 	// 攻撃の解放
 	//------------------------------------------
-	//とげ攻撃
+	// とげ攻撃
 	delete toge_;
 	delete modelToge_;
 
-	//雷攻撃
+	// 雷攻撃
 	delete kami_;
 	delete modelKami_;
 
-	//ビーム攻撃
-	
+	// ビーム攻撃
+
 	delete modelBeam_;
 
 	//------------------------------------------

@@ -3,14 +3,13 @@
 #include "KamataEngine.h"
 #include "MyMath.h"
 #include "Player.h"
-#include"toge.h"
-#include"kaminari.h"
-#include"beam.h"
+#include "beam.h"
 #include "input/Input.h"
+#include "kaminari.h"
+#include "toge.h"
 #include <algorithm>
 #include <array>
 #include <numbers>
-
 
 using namespace KamataEngine;
 using namespace MathUtility;
@@ -61,8 +60,7 @@ private:
 	uint32_t gameRuruHandle_ = 0;
 	Sprite* gameRuruSprite_ = nullptr;
 
-
-	//HP管理
+	// HP管理
 	int playerHPPoint_ = 5;
 
 	int enemyHPPoint_ = 5;
@@ -88,31 +86,26 @@ private:
 	// 敵の3Dモデルデータ
 	Model* modelEnemy_ = nullptr;
 
-	//とげ攻撃本体
-	Toge* toge_ = nullptr; 
+	// とげ攻撃本体
+	Toge* toge_ = nullptr;
 
-	//とげ攻撃の3Dモデルデータ
+	// とげ攻撃の3Dモデルデータ
 	Model* modelToge_ = nullptr;
 
-	//雷攻撃本体
-	Kaminari*kami_ = nullptr;
+	// 雷攻撃本体
+	Kaminari* kami_ = nullptr;
 
-	//雷攻撃の3Dモデルデータ
+	// 雷攻撃の3Dモデルデータ
 	Model* modelKami_ = nullptr;
 
 	// ビーム攻撃本体
 	Beam* beam_ = nullptr;
 
-
 	// ビーム攻撃の3Dモデルデータ
 	Model* modelBeam_ = nullptr;
 
-
-
 	////Playerから発射する位置
-	//Vector3 playerPos = player_->worldTransform_.translation_;
-
-	
+	// Vector3 playerPos = player_->worldTransform_.translation_;
 
 	//==================================================
 	// ▼ 攻撃ゲージ関連
@@ -149,16 +142,14 @@ private:
 	// 攻撃倍率（強攻撃）
 	int attackGauge3 = 3;
 
-
-	//シーン切り替え
+	// シーン切り替え
 	bool titleScene = false;
-	bool stageRuruScene = false;
+	bool gameRuruScene = false;
 	bool stageEnemy1 = false;
 	bool stageEnemy2 = false;
 	bool stageEnemy3 = false;
 	bool gameOver = false;
 	bool gameClear = false;
-
 
 	//==================================================
 	// ▼ カメラ関連
@@ -180,12 +171,4 @@ private:
 
 	// カメラの元位置を保存
 	Vector3 defaultCameraPos_ = {0.0f, 1.0f, -10.0f};
-
-	//音声ファイル
-	uint32_t soundTogeHandle_ = 0;
-
-	//音声再生ハンドル
-	uint32_t voiceTogeHandle_ = 0;
-
-
 };
