@@ -155,6 +155,8 @@ void GameScene::Update() {
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			canPress = false; // 一時的に無効化
 			titleScene = 0;
+			gameClear = 0;
+			gameOver = 0;
 			gameRuruScene = 1;
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
@@ -293,6 +295,7 @@ void GameScene::Update() {
 			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
 				gameClearSprite_->SetPosition({0, 0});
 				gameClear = 1;
+				gameOver = 0;
 				stageEnemy3 = 0;
 			}
 			// ゲームオーバーへ
@@ -300,17 +303,21 @@ void GameScene::Update() {
 				stageEnemy1 = 0;
 				stageEnemy2 = 0;
 				stageEnemy3 = 0;
+				gameClear = 0;
 				gameOver = 1;
 			}
-			// ゲームオーバーへ
-			if (playerAttackTurn == 0 && enemyHPPoint_ >= 0) {
-				stageEnemy1 = 0;
-				stageEnemy2 = 0;
-				stageEnemy3 = 0;
-				gameOver = 1;
-			}
+			
+		}
+		// ゲームオーバーへ
+		if (playerAttackTurn == 0 && enemyHPPoint_ >= 0) {
+			stageEnemy1 = 0;
+			stageEnemy2 = 0;
+			stageEnemy3 = 0;
+			gameClear = 0;
+			gameOver = 1;
 		}
 	}
+
 
 
 	if (gameClear == 1) {
