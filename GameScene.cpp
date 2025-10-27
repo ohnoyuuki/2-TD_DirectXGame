@@ -79,8 +79,8 @@ void GameScene::Initialize() {
 	gameClearSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
 
 	//// ゲームオーバ
-	//gameOverHandle_ = TextureManager::Load("TD2_GameClear1.png");
-	//gameOverSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
+	gameOverHandle_ = TextureManager::Load("TD2_GameOver1.png");
+	gameOverSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
 
 
 
@@ -427,13 +427,18 @@ void GameScene::Draw() {
 		// スプライト描画後処理
 		Sprite::PostDraw();
 	}
-
+	// ゲームクリア描画
 	if (gameClear == 1) {
 		Sprite::PreDraw();
 		gameClearSprite_->Draw();
 		Sprite::PostDraw();
 	}
-
+	// ゲームオーバー描画
+	if (gameOver == 1) {
+		Sprite::PreDraw();
+		gameOverSprite_->Draw();
+		Sprite::PostDraw();
+	}
 
 
 	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
