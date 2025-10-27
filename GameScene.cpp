@@ -223,7 +223,7 @@ void GameScene::Update() {
 						enemy_->OnDamage();
 						// ★ ビーム発射！
 						Vector3 startPos = player_->GetWorldTransform().translation_;
-						startPos.x += 7.0f; // 自機前に出す
+						startPos.x += 8.0f; // 自機前に出す
 						beam_->Activate(startPos);
 						// 音声再生
 						Audio::GetInstance()->PlayWave(soundBeamHandle_);
@@ -260,7 +260,7 @@ void GameScene::Update() {
 						enemy_->OnDamage();
 						// ★ ビーム発射！
 						Vector3 startPos = player_->GetWorldTransform().translation_;
-						startPos.x += 7.0f; // 自機前に出す
+						startPos.x += 8.0f; // 自機前に出す
 						beam_->Activate(startPos);
 						// 音声再生
 						Audio::GetInstance()->PlayWave(soundBeamHandle_);
