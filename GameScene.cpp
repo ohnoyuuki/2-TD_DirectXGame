@@ -66,9 +66,15 @@ void GameScene::Initialize() {
 	attackArrowHandle_ = TextureManager::Load("RighAttackArrow.png");
 	attackArrowSprite_ = Sprite::Create(attackArrowHandle_, {attackArrowX, attackArrowY});
 
+	//タイトル
+	gameTitleHandle_ = TextureManager::Load("TD2_GameTitle.png");
+	gameTitleSprite_ = Sprite::Create(gameTitleHandle_, {0, 0});
+
 	// ルール説明
 	gameRuruHandle_ = TextureManager::Load("TD2_GameRuru1.png");
 	gameRuruSprite_ = Sprite::Create(gameRuruHandle_, {0, 0});
+
+
 
 	//-------------------------------
 	// カメラ設定
@@ -134,8 +140,10 @@ void GameScene::Update() {
 	//==================================================
 	// 更新処理
 	//==================================================
+	
 	// タイトルシーン
 	if (titleScene == 1) {
+		gameTitleSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			canPress = false; // 一時的に無効化
 			titleScene = 0;
@@ -147,6 +155,7 @@ void GameScene::Update() {
 
 	// ルール説明
 	else if (gameRuruScene == 1) {
+		
 		gameRuruSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			gameRuruScene = 0;
@@ -346,7 +355,9 @@ void GameScene::Draw() {
 		// スプライト描画前処理
 		Sprite::PreDraw();
 
+		gameTitleSprite_->Draw();
 		gameRuruSprite_->Draw();
+		
 
 		// スプライト描画後処理
 		Sprite::PostDraw();
@@ -416,6 +427,7 @@ GameScene::~GameScene() {
 	delete attackSprite_;
 	delete attackArrowSprite_;
 	delete gameRuruSprite_;
+	delete gameTitleSprite_;
 
 	//------------------------------------------
 	// 敵関連の解放

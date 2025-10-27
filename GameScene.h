@@ -56,6 +56,10 @@ private:
 	// 敵のハートスプライト（HP表示用）を複数管理
 	std::vector<Sprite*> enemyHearts_;
 
+	//タイトル
+	uint32_t gameTitleHandle_ = 0;
+	Sprite* gameTitleSprite_ = nullptr;
+
 	// ルール説明
 	uint32_t gameRuruHandle_ = 0;
 	Sprite* gameRuruSprite_ = nullptr;
