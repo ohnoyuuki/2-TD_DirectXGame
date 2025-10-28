@@ -312,6 +312,7 @@ void GameScene::Update() {
 				gameClear = 1;
 				gameOver = 0;
 				stageEnemy3 = 0;
+
 			}
 			// ゲームオーバーへ
 			if (playerHPPoint_ <= 0) {
@@ -338,6 +339,7 @@ void GameScene::Update() {
 	if (gameClear == 1) {
 
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			Audio::GetInstance()->PlayWave(soundBotanHandle_);
 			// 全リセット ------------------------
 			titleScene = 1;
 			gameClear = 0;
@@ -365,6 +367,7 @@ void GameScene::Update() {
 	if (gameOver == 1) {
 
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			Audio::GetInstance()->PlayWave(soundBotanHandle_);
 			// 全リセット ------------------------
 			titleScene = 1;
 			gameOver = 0;
