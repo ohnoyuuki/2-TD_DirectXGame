@@ -136,19 +136,29 @@ void GameScene::Initialize() {
 
 	// サウンドデータの読み込み
 	soundTitleHandle_ = Audio::GetInstance()->LoadWave("Title.mp3");
-	soundGameHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
-	soundClearHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
-	soundOverHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
+	soundGameHandle_ = Audio::GetInstance()->LoadWave("Game.mp3");
+	soundClearHandle_ = Audio::GetInstance()->LoadWave("Clear.mp3");
+	soundOverHandle_ = Audio::GetInstance()->LoadWave("Over.mp3");
 
-	//音声再生
-	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
-
-
-	//効果音
+	// 効果音データの読み込み
 	soundBotanHandle_ = Audio::GetInstance()->LoadWave("botan.mp3");
 	soundTogeHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
 	soundBeamHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
 	soundKamiHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
+
+
+	// --- 再生ハンドルは全部初期化しておく ---
+	voiceTitleHandle_ = -1;
+	voiceGameHandle_ = -1;
+	voiceClearHandle_ = -1;
+	voiceOverHandle_ = -1;
+
+	// タイトルBGMをループで流す
+	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
+
+
+
+	
 }
 
 bool canPress = true;
@@ -168,8 +178,7 @@ void GameScene::Update() {
 			gameClear = 0;
 			gameOver = 0;
 			gameRuruScene = 1;
-			//音声停止
-			Audio::GetInstance()->StopWave(voiceTitleHandle_);
+			
 
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
@@ -181,12 +190,17 @@ void GameScene::Update() {
 		
 		gameRuruSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			// 音声停止
+			Audio::GetInstance()->StopWave(voiceTitleHandle_);
 			gameRuruScene = 0;
 			stageEnemy1 = 1;
 			playerHPPoint_ = 5;
 			enemyHPPoint_ = 5;
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
+
+			// ゲームBGMをループ再生
+			voiceGameHandle_ = Audio::GetInstance()->PlayWave(soundGameHandle_, true);
 		}
 	}
 
@@ -312,6 +326,9 @@ void GameScene::Update() {
 				gameClear = 1;
 				gameOver = 0;
 				stageEnemy3 = 0;
+				// ゲームBGMを停止してクリアBGM再生
+				Audio::GetInstance()->StopWave(voiceGameHandle_);
+				voiceClearHandle_ = Audio::GetInstance()->PlayWave(soundClearHandle_, true);
 
 			}
 			// ゲームオーバーへ
@@ -321,6 +338,10 @@ void GameScene::Update() {
 				stageEnemy3 = 0;
 				gameClear = 0;
 				gameOver = 1;
+
+				// ゲームBGMを停止してオーバーBGM再生
+				Audio::GetInstance()->StopWave(voiceGameHandle_);
+				voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
 			}
 			
 		}
@@ -340,6 +361,11 @@ void GameScene::Update() {
 
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
+			// BGMの切り替え
+			Audio::GetInstance()->StopWave(voiceClearHandle_);
+			Audio::GetInstance()->StopWave(voiceOverHandle_);
+			voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
+
 			// 全リセット ------------------------
 			titleScene = 1;
 			gameClear = 0;
