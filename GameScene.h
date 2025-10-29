@@ -3,11 +3,11 @@
 #include "KamataEngine.h"
 #include "MyMath.h"
 #include "Player.h"
+#include "Skydome.h"
 #include "beam.h"
 #include "input/Input.h"
 #include "kaminari.h"
 #include "toge.h"
-#include "Skydome.h"
 #include <algorithm>
 #include <array>
 #include <numbers>
@@ -168,8 +168,6 @@ private:
 	bool gameOver = false;
 	bool gameClear = false;
 
-	float arrowBaseSpeed_ = 2.0f; // 矢印の基本スピード
-
 	// 遅延タイマー
 	int delayTimerPoint = false;
 	int delayTimer = 150;
@@ -215,9 +213,5 @@ private:
 	//----------------------------
 
 	// 音声再生ハンドル
-	int voiceTitleHandle_ = 0;
-	int voiceGameHandle_ = 0;
-	int voiceClearHandle_ = 0;
-	int voiceOverHandle_ = 0;
-	
+	uint32_t voiceTitleHandle_ = 0;
 };

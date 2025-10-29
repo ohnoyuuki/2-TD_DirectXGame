@@ -134,24 +134,18 @@ void GameScene::Initialize() {
 
 	// サウンドデータの読み込み
 	soundTitleHandle_ = Audio::GetInstance()->LoadWave("Title.mp3");
-	soundGameHandle_ = Audio::GetInstance()->LoadWave("Game.mp3");
-	soundClearHandle_ = Audio::GetInstance()->LoadWave("Clear.mp3");
-	soundOverHandle_ = Audio::GetInstance()->LoadWave("Over.mp3");
+	soundGameHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
+	soundClearHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
+	soundOverHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
 
-	// 効果音データの読み込み
+	// 音声再生
+	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
+
+	// 効果音
 	soundBotanHandle_ = Audio::GetInstance()->LoadWave("botan.mp3");
 	soundTogeHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
 	soundBeamHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
 	soundKamiHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
-
-	// --- 再生ハンドルは全部初期化しておく ---
-	voiceTitleHandle_ = -1;
-	voiceGameHandle_ = -1;
-	voiceClearHandle_ = -1;
-	voiceOverHandle_ = -1;
-
-	// タイトルBGMをループで流す
-	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
 
 	// スカイドーム
 	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
@@ -170,7 +164,7 @@ void GameScene::Update() {
 	if (titleScene == 1) {
 		// スカイドーム
 		modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
-		skydome_->Initialize(modelSkydome_, &camera_); 
+		skydome_->Initialize(modelSkydome_, &camera_);
 
 		gameTitleSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
@@ -178,7 +172,11 @@ void GameScene::Update() {
 			titleScene = 0;
 			gameClear = 0;
 			gameOver = 0;
+			delayTimerPoint = 0;
 			gameRuruScene = 1;
+			delayTimer = 150;
+			// 音声停止
+			Audio::GetInstance()->StopWave(voiceTitleHandle_);
 
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
@@ -190,26 +188,23 @@ void GameScene::Update() {
 
 		gameRuruSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
-			// 音声停止
-			Audio::GetInstance()->StopWave(voiceTitleHandle_);
 			gameRuruScene = 0;
 			stageEnemy1 = 1;
 			playerHPPoint_ = 5;
 			enemyHPPoint_ = 5;
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
-
-			// ゲームBGMをループ再生
-			voiceGameHandle_ = Audio::GetInstance()->PlayWave(soundGameHandle_, true);
 		}
 	}
 
 	// ステージ
 	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
+		// スカイドーム
+		skydome_->Update();
 		// voiceStageHandle_ = Audio::GetInstance()->PlayWave(stageBgmHandle_, true);
 		// 自キャラ------------------------------------------
 		//  スペースキーが押された瞬間に HP を1減らす
-		if (playerAttackTurn > 0) {
+		if (playerAttackTurn >= 0) {
 			attackArrowY += arrowDirection * 2; // 上下移動のスピード（2ピクセル）
 
 			// 画面上端で反転
@@ -226,108 +221,111 @@ void GameScene::Update() {
 			//------------------------------------------
 			// スペースキーで攻撃判定
 			//------------------------------------------
-			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-				// 一時停止 → 攻撃判定処理
-				if (arrowDirection == 0) {
-					// 動きを再開（上方向へ）
-					attackArrowY = 576;
-					arrowDirection = -5;
-				} else {
-					// 矢印の動きを止めて攻撃処理実行
-					arrowDirection = 0;
+			if (delayTimerPoint == 0) {
+				if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+					// 一時停止 → 攻撃判定処理
+					if (arrowDirection == 0) {
+						// 動きを再開（上方向へ）
+						attackArrowY = 576;
+						arrowDirection = -5;
+					} else {
+						// 矢印の動きを止めて攻撃処理実行
+						arrowDirection = 0;
 
-					// 攻撃ターンを1消費
-					playerAttackTurn--;
+						// 攻撃ターンを1消費
+						playerAttackTurn--;
 
-					// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
-					if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
-						playerHPPoint_--;    // ミス（自分にダメージ）
-						player_->OnDamage(); // ★ ダメージリアクション発動！
-						StartCameraShake();
-					}
-					if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
-						enemyHPPoint_--;     // 弱攻撃
-						player_->OnAttack(); // ★ 攻撃モーション発動！
-						enemy_->OnDamage();
-						// ★ ビーム発射！
-						Vector3 startPos = player_->GetWorldTransform().translation_;
-						startPos.x += 8.0f; // 自機前に出す
-						beam_->Activate(startPos);
-						// 音声再生
-						Audio::GetInstance()->PlayWave(soundBeamHandle_);
-					}
-					if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
-						enemyHPPoint_ -= attackGauge2; // 中攻撃
-						player_->OnAttack();           // ★ 攻撃モーション発動！
-						enemy_->OnDamage();
-						toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
-						// 音声再生
-						Audio::GetInstance()->PlayWave(soundTogeHandle_);
-					}
-					if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
-						enemyHPPoint_ -= attackGauge3; // 強攻撃
-						playerHPPoint_--;
-						player_->OnAttack(); // ★ 攻撃モーション発動！
-						enemy_->OnDamage();
-						StartCameraShake();
-						kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
-						// 音声再生
-						Audio::GetInstance()->PlayWave(soundKamiHandle_);
-					}
-					if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
-						enemyHPPoint_ -= attackGauge2; // 中攻撃
-						player_->OnAttack();           // ★ 攻撃モーション発動！
-						enemy_->OnDamage();
-						toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
-						// 音声再生
-						Audio::GetInstance()->PlayWave(soundTogeHandle_);
-					}
-					if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
-						enemyHPPoint_--;     // 弱攻撃
-						player_->OnAttack(); // ★ 攻撃モーション発動！
-						enemy_->OnDamage();
-						// ★ ビーム発射！
-						Vector3 startPos = player_->GetWorldTransform().translation_;
-						startPos.x += 8.0f; // 自機前に出す
-						beam_->Activate(startPos);
-						// 音声再生
-						Audio::GetInstance()->PlayWave(soundBeamHandle_);
-					}
-					if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
-						playerHPPoint_--;    // ミス（自分にダメージ）
-						player_->OnDamage(); // ★ ダメージリアクション発動！
-						StartCameraShake();
+						// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
+						if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
+							playerHPPoint_--;    // ミス（自分にダメージ）
+							player_->OnDamage(); // ★ ダメージリアクション発動！
+							StartCameraShake();
+						}
+						if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
+							enemyHPPoint_--;     // 弱攻撃
+							player_->OnAttack(); // ★ 攻撃モーション発動！
+							enemy_->OnDamage();
+							// ★ ビーム発射！
+							Vector3 startPos = player_->GetWorldTransform().translation_;
+							startPos.x += 8.0f; // 自機前に出す
+							beam_->Activate(startPos);
+							// 音声再生
+							Audio::GetInstance()->PlayWave(soundBeamHandle_);
+						}
+						if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
+							enemyHPPoint_ -= attackGauge2; // 中攻撃
+							player_->OnAttack();           // ★ 攻撃モーション発動！
+							enemy_->OnDamage();
+							toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
+							// 音声再生
+							Audio::GetInstance()->PlayWave(soundTogeHandle_);
+						}
+						if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
+							enemyHPPoint_ -= attackGauge3; // 強攻撃
+							playerHPPoint_--;
+							player_->OnAttack(); // ★ 攻撃モーション発動！
+							enemy_->OnDamage();
+							StartCameraShake();
+							kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
+							// 音声再生
+							Audio::GetInstance()->PlayWave(soundKamiHandle_);
+						}
+						if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
+							enemyHPPoint_ -= attackGauge2; // 中攻撃
+							player_->OnAttack();           // ★ 攻撃モーション発動！
+							enemy_->OnDamage();
+							toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
+							// 音声再生
+							Audio::GetInstance()->PlayWave(soundTogeHandle_);
+						}
+						if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
+							enemyHPPoint_--;     // 弱攻撃
+							player_->OnAttack(); // ★ 攻撃モーション発動！
+							enemy_->OnDamage();
+							// ★ ビーム発射！
+							Vector3 startPos = player_->GetWorldTransform().translation_;
+							startPos.x += 8.0f; // 自機前に出す
+							beam_->Activate(startPos);
+							// 音声再生
+							Audio::GetInstance()->PlayWave(soundBeamHandle_);
+						}
+						if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
+							playerHPPoint_--;    // ミス（自分にダメージ）
+							player_->OnDamage(); // ★ ダメージリアクション発動！
+							StartCameraShake();
+						}
 					}
 				}
 			}
 
-
-
-
 			// ネクストステージ
 			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
-				arrowBaseSpeed_ = 2.0f; // ステージ1：普通
 				delayTimerPoint = 1;
 				if (delayTimerPoint == 1) {
 					delayTimer--;
 				}
 				if (delayTimer <= 0) {
-					delayTimerPoint = 0;
-					delayTimer = 150;
 					stageEnemy2 = 1;
 					playerHPPoint_ += 1;
 					enemyHPPoint_ = 5;
 					playerAttackTurn = 3;
 					stageEnemy1 = 0;
 					enemy_->Initialize(enemyModel2_, &camera_);
+					delayTimer = 150;
+					delayTimerPoint = 0;
 					// スカイドーム
 					modelSkydome_ = Model::CreateFromOBJ("SkyDome2", true);
 					skydome_->Initialize(modelSkydome_, &camera_);
 				}
+				/*stageEnemy2 = 1;
+				playerHPPoint_ += 1;
+				enemyHPPoint_ = 5;
+				playerAttackTurn = 3;
+				stageEnemy1 = 0;
+				enemy_->Initialize(enemyModel2_, &camera_); */
 			}
 			// ネクストステージ
 			if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
-				arrowBaseSpeed_ = 3.0f; // ステージ2：少し速い
 				delayTimerPoint = 1;
 				if (delayTimerPoint == 1) {
 					delayTimer--;
@@ -344,9 +342,12 @@ void GameScene::Update() {
 					modelSkydome_ = Model::CreateFromOBJ("SkyDome3", true);
 					skydome_->Initialize(modelSkydome_, &camera_);
 				}
+				/*stageEnemy3 = 1;
+				playerHPPoint_ += 1;
+				enemyHPPoint_ = 5;
+				playerAttackTurn = 3;
+				stageEnemy2 = 0;*/
 			}
-			// 矢印の上下移動
-			attackArrowY += arrowDirection * arrowBaseSpeed_;
 			// ゲームクリアへ
 			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
 				delayTimerPoint = 1;
@@ -360,14 +361,14 @@ void GameScene::Update() {
 					gameClear = 1;
 					gameOver = 0;
 					stageEnemy3 = 0;
-					// ゲームBGMを停止してクリアBGM再生
-					Audio::GetInstance()->StopWave(voiceGameHandle_);
-					voiceClearHandle_ = Audio::GetInstance()->PlayWave(soundClearHandle_, true);
 				}
+				/*gameClearSprite_->SetPosition({0, 0});
+				gameClear = 1;
+				gameOver = 0;
+				stageEnemy3 = 0;*/
 			}
 			// ゲームオーバーへ
 			if (delayTimerPoint <= 0) {
-
 				if (playerHPPoint_ <= 0) {
 					delayTimerPoint = 1;
 					if (delayTimerPoint == 1) {
@@ -381,12 +382,17 @@ void GameScene::Update() {
 						stageEnemy3 = 0;
 						gameClear = 0;
 						gameOver = 1;
-					};
+					}
+					/*stageEnemy1 = 0;
+					stageEnemy2 = 0;
+					stageEnemy3 = 0;
+					gameClear = 0;
+					gameOver = 1;*/
 				}
 			}
 		}
 		// ゲームオーバーへ
-		if (playerAttackTurn == 0 && enemyHPPoint_ >= 1) {
+		if (playerAttackTurn <= 0 && enemyHPPoint_ >= 1) {
 			delayTimerPoint = 1;
 			if (delayTimerPoint == 1) {
 				delayTimer--;
@@ -399,23 +405,18 @@ void GameScene::Update() {
 				stageEnemy3 = 0;
 				gameClear = 0;
 				gameOver = 1;
-				// ゲームBGMを停止してオーバーBGM再生
-				Audio::GetInstance()->StopWave(voiceGameHandle_);
-				voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
 			}
+			/*stageEnemy1 = 0;
+			stageEnemy2 = 0;
+			stageEnemy3 = 0;
+			gameClear = 0;
+			gameOver = 1;*/
 		}
 	}
 
-	// ゲームクリア後
 	if (gameClear == 1) {
 
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
-			Audio::GetInstance()->PlayWave(soundBotanHandle_);
-			// BGMの切り替え
-			Audio::GetInstance()->StopWave(voiceClearHandle_);
-			Audio::GetInstance()->StopWave(voiceOverHandle_);
-			voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
-
 			// 全リセット ------------------------
 			titleScene = 1;
 			gameClear = 0;
@@ -428,8 +429,8 @@ void GameScene::Update() {
 			enemyHPPoint_ = 5;
 			playerAttackTurn = 3;
 
-			attackArrowY = 576.0f - 32.0f; // 矢印位置リセット
-			arrowDirection = -std::abs(arrowBaseSpeed_);
+			attackArrowY = 576 - 32; // 矢印位置リセット
+			arrowDirection = -5;
 
 			// 敵をステージ1へ戻す
 			player_->Initialize(modelPlayer_, &camera_);
@@ -443,11 +444,6 @@ void GameScene::Update() {
 	if (gameOver == 1) {
 
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
-			Audio::GetInstance()->PlayWave(soundBotanHandle_);
-			// BGMの切り替え
-			Audio::GetInstance()->StopWave(voiceClearHandle_);
-			Audio::GetInstance()->StopWave(voiceOverHandle_);
-			voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
 			// 全リセット ------------------------
 			titleScene = 1;
 			gameOver = 0;
@@ -460,8 +456,8 @@ void GameScene::Update() {
 			enemyHPPoint_ = 5;
 			playerAttackTurn = 3;
 
-			attackArrowY = 576.0f - 32.0f; // 矢印位置リセット
-			arrowDirection = -std::abs(arrowBaseSpeed_);
+			attackArrowY = 576 - 32; // 矢印位置リセット
+			arrowDirection = -5;
 
 			// 敵をステージ1へ戻す
 			player_->Initialize(modelPlayer_, &camera_);
@@ -556,6 +552,8 @@ void GameScene::Draw() {
 		toge_->Draw();   // とげ攻撃
 		kami_->Draw();   // 雷攻撃
 		beam_->Draw();   // ビーム攻撃
+		// スカイドーム
+		skydome_->Draw();
 
 		Model::PostDraw();
 
