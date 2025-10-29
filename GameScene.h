@@ -167,6 +167,10 @@ private:
 	bool gameOver = false;
 	bool gameClear = false;
 
+	// 遅延タイマー
+	int delayTimerPoint = false;
+	int delayTimer = 150;
+
 	//==================================================
 	// ▼ カメラ関連
 	//==================================================

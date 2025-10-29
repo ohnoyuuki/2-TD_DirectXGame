@@ -304,20 +304,36 @@ void GameScene::Update() {
 			// ネクストステージ
 			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
 				
-				stageEnemy2 = 1;
-				playerHPPoint_ += 1;
-				enemyHPPoint_ = 5;
-				playerAttackTurn = 3;
-				stageEnemy1 = 0;
-				enemy_->Initialize(enemyModel2_, &camera_); 
+				delayTimerPoint = 1;
+				if (delayTimerPoint == 1) {
+					delayTimer--;
+				}
+				if (delayTimer <= 0) {
+					delayTimerPoint = 0;
+					delayTimer = 150;
+					stageEnemy2 = 1;
+					playerHPPoint_ += 1;
+					enemyHPPoint_ = 5;
+					playerAttackTurn = 3;
+					stageEnemy1 = 0;
+					enemy_->Initialize(enemyModel2_, &camera_);
+				}
 			}
 			// ネクストステージ
 			if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
-				stageEnemy3 = 1;
-				playerHPPoint_ += 1;
-				enemyHPPoint_ = 5;
-				playerAttackTurn = 3;
-				stageEnemy2 = 0;
+				delayTimerPoint = 1;
+				if (delayTimerPoint == 1) {
+					delayTimer--;
+				}
+				if (delayTimer <= 0) {
+					delayTimerPoint = 0;
+					delayTimer = 150;
+					stageEnemy3 = 1;
+					playerHPPoint_ += 1;
+					enemyHPPoint_ = 5;
+					playerAttackTurn = 3;
+					stageEnemy2 = 0;
+				}
 				
 			}
 			// ゲームクリアへ
