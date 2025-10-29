@@ -93,7 +93,7 @@ void GameScene::Initialize() {
 
 	enemyModel1_ = Model::CreateFromOBJ("otama"); // ステージ1オタマジャクシ
 	enemyModel2_ = Model::CreateFromOBJ("kame");  // ステージ2亀
-	// enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
+	//enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
 
 	// 敵3Dモデル読み込み
 	modelEnemy_ = enemyModel1_;
@@ -181,7 +181,6 @@ void GameScene::Update() {
 			delayTimerPoint = 0;
 			gameRuruScene = 1;
 			delayTimer = 150;
-			
 
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
@@ -215,7 +214,7 @@ void GameScene::Update() {
 		//  スペースキーが押された瞬間に HP を1減らす
 		if (playerAttackTurn >= 0) {
 
-			 // ステージごとのスピード設定
+			// ステージごとのスピード設定
 			if (stageEnemy1 == 1) {
 				arrowBaseSpeed_ = 3.0f;
 			} else if (stageEnemy2 == 1) {
@@ -357,6 +356,7 @@ void GameScene::Update() {
 					playerHPPoint_ += 1;
 					enemyHPPoint_ = 5;
 					playerAttackTurn = 3;
+					//enemy_->Initialize(enemyModel3_, &camera_);
 					stageEnemy2 = 0;
 					// スカイドーム
 					modelSkydome_ = Model::CreateFromOBJ("SkyDome3", true);
@@ -384,7 +384,6 @@ void GameScene::Update() {
 					// ゲームBGMを停止してクリアBGM再生
 					Audio::GetInstance()->StopWave(voiceGameHandle_);
 					voiceClearHandle_ = Audio::GetInstance()->PlayWave(soundClearHandle_, true);
-				
 				}
 				/*gameClearSprite_->SetPosition({0, 0});
 				gameClear = 1;
@@ -432,7 +431,6 @@ void GameScene::Update() {
 				// ゲームBGMを停止してオーバーBGM再生
 				Audio::GetInstance()->StopWave(voiceGameHandle_);
 				voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
-			
 			}
 			/*stageEnemy1 = 0;
 			stageEnemy2 = 0;
@@ -653,9 +651,10 @@ GameScene::~GameScene() {
 	//------------------------------------------
 	delete enemy_;
 
+	
 	delete enemyModel1_;
 	delete enemyModel2_;
-	delete enemyModel3_;
+	//delete enemyModel3_;
 
 	for (auto& enemyHeart : enemyHearts_) {
 		delete enemyHeart;
