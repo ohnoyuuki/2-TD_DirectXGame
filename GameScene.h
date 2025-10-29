@@ -213,5 +213,10 @@ private:
 	//----------------------------
 
 	// 音声再生ハンドル
-	uint32_t voiceTitleHandle_ = 0;
+	int voiceTitleHandle_ = 0;
+	int voiceGameHandle_ = 0;
+	int voiceClearHandle_ = 0;
+	int voiceOverHandle_ = 0;
+
+	float arrowBaseSpeed_ = 2.0f; // 矢印の基本スピード
 };
