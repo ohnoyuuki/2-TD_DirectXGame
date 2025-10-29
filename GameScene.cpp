@@ -66,7 +66,7 @@ void GameScene::Initialize() {
 	attackArrowHandle_ = TextureManager::Load("RighAttackArrow.png");
 	attackArrowSprite_ = Sprite::Create(attackArrowHandle_, {attackArrowX, attackArrowY});
 
-	//タイトル
+	// タイトル
 	gameTitleHandle_ = TextureManager::Load("TD2_GameTitle.png");
 	gameTitleSprite_ = Sprite::Create(gameTitleHandle_, {0, 0});
 
@@ -74,15 +74,13 @@ void GameScene::Initialize() {
 	gameRuruHandle_ = TextureManager::Load("TD2_GameRuru1.png");
 	gameRuruSprite_ = Sprite::Create(gameRuruHandle_, {0, 0});
 
-	//ゲームクリア
+	// ゲームクリア
 	gameClearHandle_ = TextureManager::Load("TD2_GameClear1.png");
 	gameClearSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
 
 	//// ゲームオーバ
 	gameOverHandle_ = TextureManager::Load("TD2_GameOver1.png");
 	gameOverSprite_ = Sprite::Create(gameOverHandle_, {0, 0});
-
-
 
 	//-------------------------------
 	// カメラ設定
@@ -93,9 +91,9 @@ void GameScene::Initialize() {
 	// 敵キャラ設定
 	//-------------------------------
 
-	enemyModel1_ = Model::CreateFromOBJ("otama");    // ステージ1オタマジャクシ
-	enemyModel2_ = Model::CreateFromOBJ("kame"); // ステージ2亀
-	//enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
+	enemyModel1_ = Model::CreateFromOBJ("otama"); // ステージ1オタマジャクシ
+	enemyModel2_ = Model::CreateFromOBJ("kame");  // ステージ2亀
+	// enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
 
 	// 敵3Dモデル読み込み
 	modelEnemy_ = enemyModel1_;
@@ -146,7 +144,6 @@ void GameScene::Initialize() {
 	soundBeamHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
 	soundKamiHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
 
-
 	// --- 再生ハンドルは全部初期化しておく ---
 	voiceTitleHandle_ = -1;
 	voiceGameHandle_ = -1;
@@ -155,10 +152,6 @@ void GameScene::Initialize() {
 
 	// タイトルBGMをループで流す
 	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
-
-
-
-	
 }
 
 bool canPress = true;
@@ -167,10 +160,10 @@ void GameScene::Update() {
 	//==================================================
 	// 更新処理
 	//==================================================
-	
+
 	// タイトルシーン
 	if (titleScene == 1) {
-		
+
 		gameTitleSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			canPress = false; // 一時的に無効化
@@ -178,7 +171,6 @@ void GameScene::Update() {
 			gameClear = 0;
 			gameOver = 0;
 			gameRuruScene = 1;
-			
 
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
@@ -187,7 +179,7 @@ void GameScene::Update() {
 
 	// ルール説明
 	else if (gameRuruScene == 1) {
-		
+
 		gameRuruSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			// 音声停止
@@ -303,7 +295,7 @@ void GameScene::Update() {
 
 			// ネクストステージ
 			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
-				
+				arrowBaseSpeed_ = 2.0f; // ステージ1：普通
 				delayTimerPoint = 1;
 				if (delayTimerPoint == 1) {
 					delayTimer--;
@@ -321,6 +313,7 @@ void GameScene::Update() {
 			}
 			// ネクストステージ
 			if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
+				arrowBaseSpeed_ = 3.0f; // ステージ2：少し速い
 				delayTimerPoint = 1;
 				if (delayTimerPoint == 1) {
 					delayTimer--;
@@ -334,8 +327,9 @@ void GameScene::Update() {
 					playerAttackTurn = 3;
 					stageEnemy2 = 0;
 				}
-				
 			}
+			// 矢印の上下移動
+			attackArrowY += arrowDirection * arrowBaseSpeed_;
 			// ゲームクリアへ
 			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
 				gameClearSprite_->SetPosition({0, 0});
@@ -345,7 +339,6 @@ void GameScene::Update() {
 				// ゲームBGMを停止してクリアBGM再生
 				Audio::GetInstance()->StopWave(voiceGameHandle_);
 				voiceClearHandle_ = Audio::GetInstance()->PlayWave(soundClearHandle_, true);
-
 			}
 			// ゲームオーバーへ
 			if (playerHPPoint_ <= 0) {
@@ -359,7 +352,6 @@ void GameScene::Update() {
 				Audio::GetInstance()->StopWave(voiceGameHandle_);
 				voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
 			}
-			
 		}
 		// ゲームオーバーへ
 		if (playerAttackTurn == 0 && enemyHPPoint_ >= 0) {
@@ -368,10 +360,12 @@ void GameScene::Update() {
 			stageEnemy3 = 0;
 			gameClear = 0;
 			gameOver = 1;
+			// ゲームBGMを停止してオーバーBGM再生
+			Audio::GetInstance()->StopWave(voiceGameHandle_);
+			voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
+			
 		}
 	}
-
-
 
 	if (gameClear == 1) {
 
@@ -410,6 +404,10 @@ void GameScene::Update() {
 
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
+			// BGMの切り替え
+			Audio::GetInstance()->StopWave(voiceClearHandle_);
+			Audio::GetInstance()->StopWave(voiceOverHandle_);
+			voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
 			// 全リセット ------------------------
 			titleScene = 1;
 			gameOver = 0;
@@ -507,7 +505,6 @@ void GameScene::Draw() {
 		Sprite::PostDraw();
 	}
 
-
 	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
 		//------------------------------------------
 		// 3Dモデル描画
@@ -536,7 +533,6 @@ void GameScene::Draw() {
 
 		int pDraw = std::clamp(playerHPPoint_, 0, pMax);
 		int eDraw = std::clamp(enemyHPPoint_, 0, eMax);
-
 
 		// プレイヤーの残りHP分ハートを描画
 		for (int i = 0; i < pDraw; i++) {
@@ -578,7 +574,7 @@ GameScene::~GameScene() {
 	// 敵関連の解放
 	//------------------------------------------
 	delete enemy_;
-	
+
 	delete enemyModel1_;
 	delete enemyModel2_;
 	delete enemyModel3_;

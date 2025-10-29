@@ -167,6 +167,8 @@ private:
 	bool gameOver = false;
 	bool gameClear = false;
 
+	float arrowBaseSpeed_ = 2.0f; // 矢印の基本スピード
+
 	// 遅延タイマー
 	int delayTimerPoint = false;
 	int delayTimer = 150;
