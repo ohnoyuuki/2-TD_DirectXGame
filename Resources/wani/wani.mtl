@@ -1,4 +1,4 @@
-# Blender 4.4.1 MTL File: 'wani.blend'
+# Blender 4.4.1 MTL File: 'None'
 # www.blender.org
 
 newmtl マテリアル
@@ -9,7 +9,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd wanime_L.png
+map_Kd C:/Users/yuuki/OneDrive/デスクトップ/AL3 MT3 CG2 EN1 GE3 TR1 TD/TD/DirectXGame/Resources/wani/wani_c.png
 
 newmtl マテリアル.001
 Ns 250.000000
@@ -19,7 +19,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd wanime_R.png
+map_Kd C:/Users/yuuki/OneDrive/デスクトップ/AL3 MT3 CG2 EN1 GE3 TR1 TD/TD/DirectXGame/Resources/wani/wani_c.png
 
 newmtl マテリアル.002
 Ns 250.000000
@@ -29,4 +29,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd wani_c.png
+map_Kd C:/Users/yuuki/OneDrive/デスクトップ/AL3 MT3 CG2 EN1 GE3 TR1 TD/TD/DirectXGame/Resources/wani/wani_c.png
