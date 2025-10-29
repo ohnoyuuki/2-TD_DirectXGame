@@ -7,6 +7,7 @@
 #include "input/Input.h"
 #include "kaminari.h"
 #include "toge.h"
+#include "Skydome.h"
 #include <algorithm>
 #include <array>
 #include <numbers>
@@ -172,6 +173,10 @@ private:
 	// 遅延タイマー
 	int delayTimerPoint = false;
 	int delayTimer = 150;
+
+	// スカイドーム
+	KamataEngine::Model* modelSkydome_ = nullptr;
+	Skydome* skydome_ = nullptr;
 
 	//==================================================
 	// ▼ カメラ関連

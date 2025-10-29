@@ -152,6 +152,11 @@ void GameScene::Initialize() {
 
 	// タイトルBGMをループで流す
 	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
+
+	// スカイドーム
+	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
+	skydome_ = new Skydome();
+	skydome_->Initialize(modelSkydome_, &camera_);
 }
 
 bool canPress = true;
@@ -163,6 +168,9 @@ void GameScene::Update() {
 
 	// タイトルシーン
 	if (titleScene == 1) {
+		// スカイドーム
+		modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
+		skydome_->Initialize(modelSkydome_, &camera_); 
 
 		gameTitleSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
@@ -293,6 +301,9 @@ void GameScene::Update() {
 				}
 			}
 
+
+
+
 			// ネクストステージ
 			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
 				arrowBaseSpeed_ = 2.0f; // ステージ1：普通
@@ -309,6 +320,9 @@ void GameScene::Update() {
 					playerAttackTurn = 3;
 					stageEnemy1 = 0;
 					enemy_->Initialize(enemyModel2_, &camera_);
+					// スカイドーム
+					modelSkydome_ = Model::CreateFromOBJ("SkyDome2", true);
+					skydome_->Initialize(modelSkydome_, &camera_);
 				}
 			}
 			// ネクストステージ
@@ -326,47 +340,73 @@ void GameScene::Update() {
 					enemyHPPoint_ = 5;
 					playerAttackTurn = 3;
 					stageEnemy2 = 0;
+					// スカイドーム
+					modelSkydome_ = Model::CreateFromOBJ("SkyDome3", true);
+					skydome_->Initialize(modelSkydome_, &camera_);
 				}
 			}
 			// 矢印の上下移動
 			attackArrowY += arrowDirection * arrowBaseSpeed_;
 			// ゲームクリアへ
 			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
-				gameClearSprite_->SetPosition({0, 0});
-				gameClear = 1;
-				gameOver = 0;
-				stageEnemy3 = 0;
-				// ゲームBGMを停止してクリアBGM再生
-				Audio::GetInstance()->StopWave(voiceGameHandle_);
-				voiceClearHandle_ = Audio::GetInstance()->PlayWave(soundClearHandle_, true);
+				delayTimerPoint = 1;
+				if (delayTimerPoint == 1) {
+					delayTimer--;
+				}
+				if (delayTimer <= 0) {
+					delayTimerPoint = 0;
+					delayTimer = 150;
+					gameClearSprite_->SetPosition({0, 0});
+					gameClear = 1;
+					gameOver = 0;
+					stageEnemy3 = 0;
+					// ゲームBGMを停止してクリアBGM再生
+					Audio::GetInstance()->StopWave(voiceGameHandle_);
+					voiceClearHandle_ = Audio::GetInstance()->PlayWave(soundClearHandle_, true);
+				}
 			}
 			// ゲームオーバーへ
-			if (playerHPPoint_ <= 0) {
+			if (delayTimerPoint <= 0) {
+
+				if (playerHPPoint_ <= 0) {
+					delayTimerPoint = 1;
+					if (delayTimerPoint == 1) {
+						delayTimer--;
+					}
+					if (delayTimer <= 0) {
+						delayTimerPoint = 0;
+						delayTimer = 150;
+						stageEnemy1 = 0;
+						stageEnemy2 = 0;
+						stageEnemy3 = 0;
+						gameClear = 0;
+						gameOver = 1;
+					};
+				}
+			}
+		}
+		// ゲームオーバーへ
+		if (playerAttackTurn == 0 && enemyHPPoint_ >= 1) {
+			delayTimerPoint = 1;
+			if (delayTimerPoint == 1) {
+				delayTimer--;
+			}
+			if (delayTimer <= 0) {
+				delayTimerPoint = 0;
+				delayTimer = 150;
 				stageEnemy1 = 0;
 				stageEnemy2 = 0;
 				stageEnemy3 = 0;
 				gameClear = 0;
 				gameOver = 1;
-
 				// ゲームBGMを停止してオーバーBGM再生
 				Audio::GetInstance()->StopWave(voiceGameHandle_);
 				voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
 			}
 		}
-		// ゲームオーバーへ
-		if (playerAttackTurn == 0 && enemyHPPoint_ >= 0) {
-			stageEnemy1 = 0;
-			stageEnemy2 = 0;
-			stageEnemy3 = 0;
-			gameClear = 0;
-			gameOver = 1;
-			// ゲームBGMを停止してオーバーBGM再生
-			Audio::GetInstance()->StopWave(voiceGameHandle_);
-			voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
-			
-		}
 	}
 
+	// ゲームクリア後
 	if (gameClear == 1) {
 
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
@@ -388,8 +428,8 @@ void GameScene::Update() {
 			enemyHPPoint_ = 5;
 			playerAttackTurn = 3;
 
-			attackArrowY = 576 - 32; // 矢印位置リセット
-			arrowDirection = -5;
+			attackArrowY = 576.0f - 32.0f; // 矢印位置リセット
+			arrowDirection = -std::abs(arrowBaseSpeed_);
 
 			// 敵をステージ1へ戻す
 			player_->Initialize(modelPlayer_, &camera_);
@@ -420,8 +460,8 @@ void GameScene::Update() {
 			enemyHPPoint_ = 5;
 			playerAttackTurn = 3;
 
-			attackArrowY = 576 - 32; // 矢印位置リセット
-			arrowDirection = -5;
+			attackArrowY = 576.0f - 32.0f; // 矢印位置リセット
+			arrowDirection = -std::abs(arrowBaseSpeed_);
 
 			// 敵をステージ1へ戻す
 			player_->Initialize(modelPlayer_, &camera_);
@@ -569,6 +609,8 @@ GameScene::~GameScene() {
 	delete attackArrowSprite_;
 	delete gameRuruSprite_;
 	delete gameTitleSprite_;
+	// スカイドーム
+	delete modelSkydome_;
 
 	//------------------------------------------
 	// 敵関連の解放
