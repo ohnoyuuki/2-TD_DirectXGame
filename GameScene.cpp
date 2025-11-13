@@ -8,6 +8,10 @@ void GameScene::Initialize() {
 		playerHP_ = 7;
 	}
 
+	fade_ = new Fade();
+	fade_->Initialize();
+	
+
 	//-------------------------------
 	// 自機のHPハート設定
 	//-------------------------------
@@ -157,6 +161,11 @@ void GameScene::Initialize() {
 	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
 	skydome_ = new Skydome();
 	skydome_->Initialize(modelSkydome_, &camera_);
+
+	state_ = SceneState::Title;
+
+	// 最初は真っ黒にしてからフェードイン
+	fade_->FadeIn();
 }
 
 bool canPress = true;
@@ -167,6 +176,18 @@ void GameScene::Update() {
 	//==================================================
 
 	// タイトルシーン
+	switch (state_) {
+	case GameScene::SceneState::Title:
+		break;
+	case GameScene::SceneState::FadeOut:
+		break;
+	case GameScene::SceneState::Game:
+		break;
+	case GameScene::SceneState::FadeIn:
+		break;
+	default:
+		break;
+	}
 	if (titleScene == 1) {
 		// スカイドーム
 		modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
@@ -192,17 +213,27 @@ void GameScene::Update() {
 
 		gameRuruSprite_->SetPosition({0, 0});
 		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
+			fade_->FadeOut(); // フェードアウト開始
 			// 音声停止
 			Audio::GetInstance()->StopWave(voiceTitleHandle_);
 			gameRuruScene = 0;
 			stageEnemy1 = 1;
 			playerHPPoint_ = 5;
 			enemyHPPoint_ = 5;
+			// フェードアウトが終わったらシーン切り替え要求
+			if (fade_->IsFadeOutEnd()) {
+				isEnd_ = true;
+			}
+
 			// 音声再生
 			Audio::GetInstance()->PlayWave(soundBotanHandle_);
 			// ゲームBGMをループ再生
 			voiceGameHandle_ = Audio::GetInstance()->PlayWave(soundGameHandle_, true);
 		}
+	}
+	// フェードアウトが終わったらシーン切り替え要求
+	if (fade_->IsFadeOutEnd()) {
+		isEnd_ = true;
 	}
 
 	// ステージ
@@ -598,6 +629,8 @@ void GameScene::Draw() {
 		//------------------------------------------
 		Sprite::PreDraw();
 
+		fade_->Draw();
+
 		// 攻撃ゲージと矢印を描画
 		attackSprite_->Draw();
 		attackArrowSprite_->Draw();
@@ -618,6 +651,8 @@ void GameScene::Draw() {
 			enemyHearts_[i]->Draw();
 		}
 
+
+
 		// スプライト描画後処理
 		Sprite::PostDraw();
 	}
@@ -628,6 +663,7 @@ void GameScene::Draw() {
 //==================================================
 GameScene::~GameScene() {
 
+	 
 	//------------------------------------------
 	// プレイヤー関連の解放
 	//------------------------------------------
@@ -650,8 +686,6 @@ GameScene::~GameScene() {
 	// 敵関連の解放
 	//------------------------------------------
 	delete enemy_;
-
-	
 	delete enemyModel1_;
 	delete enemyModel2_;
 	//delete enemyModel3_;
@@ -675,6 +709,10 @@ GameScene::~GameScene() {
 	// ビーム攻撃
 
 	delete modelBeam_;
+
+	delete fade_;
+	delete titleSprite_;
+	delete gameSprite_;
 
 	//------------------------------------------
 	// （デバッグカメラは未使用）

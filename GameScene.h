@@ -8,12 +8,15 @@
 #include "input/Input.h"
 #include "kaminari.h"
 #include "toge.h"
+#include"Fade.h"
 #include <algorithm>
 #include <array>
 #include <numbers>
 
 using namespace KamataEngine;
 using namespace MathUtility;
+
+
 
 //==================================================
 // ゲームのメインシーンを管理するクラス
@@ -41,6 +44,22 @@ public:
 	void StartCameraShake();
 
 private:
+
+	enum class SceneState {
+		Title,   // タイトル画面
+		FadeOut, // タイトル→ゲームへの暗転中
+		Game,    // ゲームプレイ中
+		FadeIn,  // ゲーム→タイトルへの明転中（リトライなど）
+
+	};
+	
+	SceneState state_ = SceneState::Title;
+
+	Fade* fade_ = nullptr;
+	Sprite* titleSprite_ = nullptr;
+	Sprite* gameSprite_ = nullptr;
+
+
 	//==================================================
 	// ▼ 自機（プレイヤー）関連
 	//==================================================
@@ -219,4 +238,8 @@ private:
 	int voiceOverHandle_ = 0;
 
 	float arrowBaseSpeed_ = 2.0f; // 矢印の基本スピード
+
+	Fade* fade_ = nullptr;         // フェード管理用
+	bool isSceneChanging_ = false; // シーン切り替え中フラグ
+	bool isEnd_ = false;           // シーン終了リクエスト
 };
