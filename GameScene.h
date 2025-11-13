@@ -55,7 +55,7 @@ private:
 	
 	SceneState state_ = SceneState::Title;
 
-	Fade* fade_ = nullptr;
+
 	Sprite* titleSprite_ = nullptr;
 	Sprite* gameSprite_ = nullptr;
 
