@@ -1,36 +1,37 @@
 #pragma once
 #include "KamataEngine.h"
-
-
-using namespace KamataEngine;
-
-
 class Fade {
 public:
-	Fade();
-	~Fade();
+	// フェードの状態
+	enum class Status {
+		None,    // フェードなし
+		FadeIn,  // フェードイン中
+		FadeOut, // フェードアウト中
+	};
 
 	// 初期化
 	void Initialize();
-
-	// フェード制御
-	void FadeIn();  // 明るくなる
-	void FadeOut(); // 暗くなる
-
-	// 更新・描画
+	// 更新
 	void Update();
+	// 描画
 	void Draw();
-
-	// 状態チェック
-	bool IsFading() const { return isFading_; }
-	bool IsFadeInEnd() const { return (!isFading_ && fadeIn_ && alpha_ == 0); }
-	bool IsFadeOutEnd() const { return (!isFading_ && !fadeIn_ && alpha_ == 255); }
+	// フェード開始
+	void Start(Status status, float duration);
+	// フェード終了
+	void Stop();
+	// フェード終了判定
+	bool IsFinished() const;
 
 private:
-	uint32_t fadeHandle_ = 0;
-	Sprite*fadeSprite_ = nullptr;
-	int alpha_ = 255;       // 透明度（0 = 透明, 255 = 黒）
-	int fadeSpeed_ = 8;     // フェード速度
-	bool fadeIn_ = false;   // 明転中か暗転中か
-	bool isFading_ = false; // フェード中フラグ
+	// テクスチャハンドル
+	uint32_t textureHandle_ = 0;
+	// スプライト
+	KamataEngine::Sprite* sprite_ = nullptr;
+
+	// 現在のフェードの状態
+	Status status_ = Status::None;
+	// フェードの持続時間
+	float duration_ = 0.0f;
+	// 経過時間カウンター
+	float counter_ = 0.0f;
 };

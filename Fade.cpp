@@ -1,72 +1,84 @@
 #include "Fade.h"
+#include "algorithm"
+using namespace KamataEngine;
 
-
-Fade::Fade() {}
-Fade::~Fade() { delete fadeSprite_; }
-
+// 初期化
 void Fade::Initialize() {
-	// 黒テクスチャ（1×1ピクセルの黒画像を作るか、既存テクスチャIDを使う）
-	fadeHandle_ = TextureManager::Load("white1x1.png");
-
-	// スプライト生成（ここを先に！）
-	fadeSprite_ = Sprite::Create(fadeHandle_, {0, 0});
-
-	// 画面全体に拡大
-	fadeSprite_->SetSize({1280.0f, 720.0f});
-
-	// 画面中央に配置
-	fadeSprite_->SetPosition({640.0f, 360.0f});
-
-	// 初期の色（alpha を反映）
-	float a = alpha_ / 255.0f;
-	// Vector4(r,g,b,a) と仮定（r,g,b が 0 = 黒）
-	// 黒で初期化
-	fadeSprite_->SetColor(Vector4{0.0f, 0.0f, 0.0f, a});
-
-	// ※ "white1x1.png" は1ピクセルの白画像でOK
-	//    存在しない場合、全画面矩形をシェーダーで描く方式でも可
-	
-
-	
+	// ファイル名を指定してテクスチャを読み込む
+	textureHandle_ = TextureManager::Load("white1x1.png");
+	// スプライトインデックスの生成
+	sprite_ = KamataEngine::Sprite::Create(textureHandle_, {0, 0});
+	// 画面サイズ
+	sprite_->SetSize(Vector2(1280, 720));
+	// 黒色
+	sprite_->SetColor(Vector4(0, 0, 0, 1));
 }
-
-void Fade::FadeIn() {
-	fadeIn_ = true;
-	isFading_ = true;
-	alpha_ = 255;
-}
-
-void Fade::FadeOut() {
-	fadeIn_ = false;
-	isFading_ = true;
-	alpha_ = 0;
-}
-
+// 更新
 void Fade::Update() {
-	if (!isFading_)
-		return;
+	// フェード状態による分岐
+	switch (status_) {
+	case Fade::Status::None:
+		// 何もしない
+		break;
+	case Fade::Status::FadeIn:
 
-	if (fadeIn_) {
-		alpha_ -= fadeSpeed_;
-		if (alpha_ <= 0) {
-			alpha_ = 0;
-			isFading_ = false;
+		// 1フレーム分の秒数カウントアップ
+		counter_ += 1.0f / 60.0f;
+		// フェード継続時間に達したら打ち止め
+		if (counter_ >= duration_) {
+			counter_ = duration_;
 		}
-	} else {
-		alpha_ += fadeSpeed_;
-		if (alpha_ >= 255) {
-			alpha_ = 255;
-			isFading_ = false;
+		// 0.0fから1.0fの間で、
+		//  経過時間がフェード継続時間に近づくほど
+		//  アルファ値を大きくする
+		sprite_->SetColor(Vector4(0, 0, 0, 1.0f - std::clamp(counter_ / duration_, 0.0f, 1.0f)));
+		break;
+	case Fade::Status::FadeOut:
+
+		// 1フレーム分の秒数カウントアップ
+		counter_ += 1.0f / 60.0f;
+		// フェード継続時間に達したら打ち止め
+		if (counter_ >= duration_) {
+			counter_ = duration_;
 		}
+		// 0.0fから1.0fの間で、
+		//  経過時間がフェード継続時間に近づくほど
+		//  アルファ値を大きくする
+		sprite_->SetColor(Vector4(0, 0, 0, std::clamp(counter_ / duration_, 0.0f, 1.0f)));
+		break;
 	}
-	// Vector4 に変換してセット（0..1 の正規化）
-	float a = static_cast<float>(alpha_) / 255.0f;
-	fadeSprite_->SetColor(Vector4{0.0f, 0.0f, 0.0f, a});
+}
+// 描画
+void Fade::Draw() {
+	if (status_ == Status::None) {
+		return;
+	}
+	// DirectXCommonインスタンスの取得
 
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+
+	KamataEngine::Sprite::PreDraw(dxCommon->GetCommandList());
+	sprite_->Draw();
+	KamataEngine::Sprite::PostDraw();
 }
 
-void Fade::Draw() {
-	if (fadeSprite_) {
-		fadeSprite_->Draw();
+void Fade::Start(Status status, float duration) {
+	status_ = status;
+	duration_ = duration;
+	counter_ = 0.0f;
+}
+
+void Fade::Stop() { status_ = Status::None; }
+
+bool Fade::IsFinished() const {
+	switch (status_) {
+	case Fade::Status::FadeIn:
+	case Fade::Status::FadeOut:
+		if (counter_ >= duration_) {
+			return true;
+		} else {
+			return false;
+		}
 	}
+	return true;
 }

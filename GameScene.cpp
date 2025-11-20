@@ -1,727 +1,399 @@
 #include "GameScene.h"
+#include "CameraController.h"
+#include "Enemy.h"
+#include "Fade.h"
+#include "MapChipField.h"
+#include "MyMath.h"
+#include "Player.h"
+#include "Skydome.h"
+using namespace KamataEngine;
 
 // 初期化
 void GameScene::Initialize() {
-	// シーン初期化
-	titleScene = true;
-	if (stageEnemy1 == 1) {
-		playerHP_ = 7;
-	}
+	// h(ヘッターファイル)にいれる
 
-	fade_ = new Fade();
-	fade_->Initialize();
-	
+	// textureHandle_ = TextureManager::Load("Fruuits.png");
 
-	//-------------------------------
-	// 自機のHPハート設定
-	//-------------------------------
+	// ゲームプレイフェーズから開始
+	phase_ = Phase::kPlay;
 
-	// プレイヤーのハート画像を読み込み
-	hatoHandle_ = TextureManager::Load("ha-to.png");
+	sprite_ = Sprite::Create(textureHandle_, {100, 50});
 
-	// 複数のスプライトを生成
-	for (int i = 0; i < playerHPPoint_; i++) {
-		// X座標を少しずつずらして横に配置
-		Sprite* heart = Sprite::Create(hatoHandle_, {300.0f + i * 55.0f, 660.0f});
-		hearts_.push_back(heart);
-	}
+	// 3Dモデルの生成
+	modelskydome_ = Model::CreateFromOBJ("skydome", true);
 
-	//-------------------------------
-	// 敵のHPハート設定
-	//-------------------------------
+	// デバックカメラの生成
+	debugCamera_ = new DebugCamera(100, 200);
 
-	// 敵ハート画像を読み込み
-	ehatoHadle_ = TextureManager::Load("Eha-to.png");
+	cube_ = Model::CreateFromOBJ("block");
 
-	// 敵ハートを5個生成して上部に並べる
-	for (int i = 0; i < enemyHPPoint_; i++) {
-		Sprite* enemyHeart = Sprite::Create(ehatoHadle_, {1000.0f + i * 55.0f, 10.0f});
-		enemyHearts_.push_back(enemyHeart);
-	}
+	// 3Dモデルデータの生成
+	modelPlayer_ = Model::CreateFromOBJ("player", true);
 
-	// HPの初期値（ハートの数で設定）
-	playerHP_ = static_cast<int>(hearts_.size());
-	enemyHP_ = static_cast<int>(enemyHearts_.size());
+	// 敵の3Dモデルデータの生成
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
 
-	//-------------------------------
-	// プレイヤー設定
-	//-------------------------------
+	// パーティクルの3Dモデルデータの生成
+	modelParticle_ = Model::CreateFromOBJ("deathParticle", true);
 
-	// 3Dモデルの読み込み
-	modelPlayer_ = Model::CreateFromOBJ("suraimu");
-
-	// プレイヤーオブジェクト生成
+	// 自キャラの生成
 	player_ = new Player();
 
-	// モデルとカメラを渡して初期化
-	player_->Initialize(modelPlayer_, &camera_);
+	// 敵の生成
+	// enemy_ = new Enemy();
 
-	//-------------------------------------
+	/**/
+	for (int32_t i = 0; i < 3; i++) {
+		Enemy* newEnemy = new Enemy();
+		KamataEngine::Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(32 + i, 16 + i);
+		newEnemy->Initialize(modelEnemy_, &camera_, enemyPosition);
 
-	//-------------------------------
-	// 攻撃ゲージの設定
-	//-------------------------------
+		enemies_.push_back(newEnemy);
+	}
 
-	// 攻撃ゲージ本体の画像読み込み
-	attackHandle_ = TextureManager::Load("geegiBer.png");
-	attackSprite_ = Sprite::Create(attackHandle_, {0, 0});
+	// マップチップフィールドの生成
+	mapChipField_ = new MapChipField;
 
-	// 攻撃ゲージ上を動く矢印画像読み込み
-	attackArrowHandle_ = TextureManager::Load("RighAttackArrow.png");
-	attackArrowSprite_ = Sprite::Create(attackArrowHandle_, {attackArrowX, attackArrowY});
+	// 座標をマップチップ番号で指定
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 18);
+	player_->Initialize(modelPlayer_, &camera_, playerPosition);
+	player_->SetMapChipField(mapChipField_); // 自キャラの生成と初期化
 
-	// タイトル
-	gameTitleHandle_ = TextureManager::Load("TD2_GameTitle.png");
-	gameTitleSprite_ = Sprite::Create(gameTitleHandle_, {0, 0});
+	/**/
+	// パーティクル
+	deathParticles_ = new DeathParticle();
+	deathParticles_->Initialize(modelParticle_, &camera_, playerPosition);
 
-	// ルール説明
-	gameRuruHandle_ = TextureManager::Load("TD2_GameRuru1.png");
-	gameRuruSprite_ = Sprite::Create(gameRuruHandle_, {0, 0});
+	// ワールドトランスフォームの初期化
+	worldTransform_.Initialize();
 
-	// ゲームクリア
-	gameClearHandle_ = TextureManager::Load("TD2_GameClear1.png");
-	gameClearSprite_ = Sprite::Create(gameClearHandle_, {0, 0});
-
-	//// ゲームオーバ
-	gameOverHandle_ = TextureManager::Load("TD2_GameOver1.png");
-	gameOverSprite_ = Sprite::Create(gameOverHandle_, {0, 0});
-
-	//-------------------------------
-	// カメラ設定
-	//-------------------------------
+	// カメラの初期化
 	camera_.Initialize();
 
-	//-------------------------------
-	// 敵キャラ設定
-	//-------------------------------
-
-	enemyModel1_ = Model::CreateFromOBJ("otama"); // ステージ1オタマジャクシ
-	enemyModel2_ = Model::CreateFromOBJ("kame");  // ステージ2亀
-	//enemyModel3_ = Model::CreateFromOBJ("wani");  // ステージ3ワニ
-
-	// 敵3Dモデル読み込み
-	modelEnemy_ = enemyModel1_;
-
-	// 敵オブジェクト生成
-	enemy_ = new Enemy();
-
-	// モデルとカメラを渡して初期化
-	enemy_->Initialize(modelEnemy_, &camera_);
-
-	//-------------------------------
-	// 攻撃ターン初期値
-	//-------------------------------
-	playerAttackTurn = 3;
-	//-------------------------------
-	// 攻撃種類
-	//-------------------------------
-	// とげ攻撃
-	// 3Dモデル読み込み
-	modelToge_ = Model::CreateFromOBJ("toge");
-
-	toge_ = new Toge();
-
-	toge_->Initialize(modelToge_, &camera_);
-	// 雷攻撃
-	//  3Dモデル読み込み
-	modelKami_ = Model::CreateFromOBJ("kaminari");
-
-	kami_ = new Kaminari();
-	kami_->Initialize(modelKami_, &camera_);
-
-	// 3Dモデル読み込み
-	modelBeam_ = Model::CreateFromOBJ("beam");
-
-	// ビーム攻撃
-	beam_ = new Beam();
-	beam_->Initialize(modelBeam_, &camera_);
-
-	// サウンドデータの読み込み
-	soundTitleHandle_ = Audio::GetInstance()->LoadWave("Title.mp3");
-	soundGameHandle_ = Audio::GetInstance()->LoadWave("Game.mp3");
-	soundClearHandle_ = Audio::GetInstance()->LoadWave("Clear.mp3");
-	soundOverHandle_ = Audio::GetInstance()->LoadWave("Over.mp3");
-
-	// 効果音データの読み込み
-	soundBotanHandle_ = Audio::GetInstance()->LoadWave("botan.mp3");
-	soundTogeHandle_ = Audio::GetInstance()->LoadWave("toge.mp3");
-	soundBeamHandle_ = Audio::GetInstance()->LoadWave("beam.mp3");
-	soundKamiHandle_ = Audio::GetInstance()->LoadWave("kaminari.mp3");
-
-	// --- 再生ハンドルは全部初期化しておく ---
-	voiceTitleHandle_ = -1;
-	voiceGameHandle_ = -1;
-	voiceClearHandle_ = -1;
-	voiceOverHandle_ = -1;
-
-	// タイトルBGMをループで流す
-	voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
-
-	// スカイドーム
-	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
+	// スカイドームの生成
 	skydome_ = new Skydome();
-	skydome_->Initialize(modelSkydome_, &camera_);
 
-	state_ = SceneState::Title;
+	// スカイドームの初期化
+	skydome_->Initialize(modelskydome_, textureHandle_, &camera_);
 
-	// 最初は真っ黒にしてからフェードイン
-	fade_->FadeIn();
+	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
+	// 表示ブロックの生成
+	GenerateBlocks();
+
+	// 自キャラの初期化
+	// player_->Initialize(modelPlayer_,&camera_,playerPosition);
+
+	// カメラコントローラの初期化
+	cameraController_ = new CameraController;
+	cameraController_->Initialize();
+	cameraController_->SetTarget(player_);
+	cameraController_->Reset();
+
+	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
+	cameraController_->SetMovableArea(cameraArea);
+
+	// マップチップフィールドの生成と初期化
+
+	// フェーズインから開始
+	phase_ = Phase::kFadeIn;
+
+	// フェード
+	fade_ = new Fade();
+	fade_->Initialize();
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
 
-bool canPress = true;
+// ブロック
+void GameScene::GenerateBlocks() {
+	// 要素数
+	uint32_t numBlockVirtical = mapChipField_->GetNumBlockVirtical();
+	uint32_t numBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+	// ブロック1個分の横幅
+	// const float kBlockWidth = 2.0f;
+	// const float kBlockHeight = 2.0f;
+	// 要素数を変更する
+	worldTransformBlocks_.resize(numBlockVirtical);
 
-void GameScene::Update() {
-	//==================================================
-	// 更新処理
-	//==================================================
-
-	// タイトルシーン
-	switch (state_) {
-	case GameScene::SceneState::Title:
-		break;
-	case GameScene::SceneState::FadeOut:
-		break;
-	case GameScene::SceneState::Game:
-		break;
-	case GameScene::SceneState::FadeIn:
-		break;
-	default:
-		break;
-	}
-	if (titleScene == 1) {
-		// スカイドーム
-		modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
-		skydome_->Initialize(modelSkydome_, &camera_);
-
-		gameTitleSprite_->SetPosition({0, 0});
-		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
-			canPress = false; // 一時的に無効化
-			titleScene = 0;
-			gameClear = 0;
-			gameOver = 0;
-			delayTimerPoint = 0;
-			gameRuruScene = 1;
-			delayTimer = 150;
-
-			// 音声再生
-			Audio::GetInstance()->PlayWave(soundBotanHandle_);
-		}
+	////キューブの生成
+	for (uint32_t i = 0; i < numBlockVirtical; i++) {
+		worldTransformBlocks_[i].resize(numBlockHorizontal);
 	}
 
-	// ルール説明
-	else if (gameRuruScene == 1) {
-
-		gameRuruSprite_->SetPosition({0, 0});
-		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
-			fade_->FadeOut(); // フェードアウト開始
-			// 音声停止
-			Audio::GetInstance()->StopWave(voiceTitleHandle_);
-			gameRuruScene = 0;
-			stageEnemy1 = 1;
-			playerHPPoint_ = 5;
-			enemyHPPoint_ = 5;
-			// フェードアウトが終わったらシーン切り替え要求
-			if (fade_->IsFadeOutEnd()) {
-				isEnd_ = true;
-			}
-
-			// 音声再生
-			Audio::GetInstance()->PlayWave(soundBotanHandle_);
-			// ゲームBGMをループ再生
-			voiceGameHandle_ = Audio::GetInstance()->PlayWave(soundGameHandle_, true);
-		}
-	}
-	// フェードアウトが終わったらシーン切り替え要求
-	if (fade_->IsFadeOutEnd()) {
-		isEnd_ = true;
-	}
-
-	// ステージ
-	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
-		// スカイドーム
-		skydome_->Update();
-		// voiceStageHandle_ = Audio::GetInstance()->PlayWave(stageBgmHandle_, true);
-		// 自キャラ------------------------------------------
-		//  スペースキーが押された瞬間に HP を1減らす
-		if (playerAttackTurn >= 0) {
-
-			// ステージごとのスピード設定
-			if (stageEnemy1 == 1) {
-				arrowBaseSpeed_ = 3.0f;
-			} else if (stageEnemy2 == 1) {
-				arrowBaseSpeed_ = 6.0f;
-			} else if (stageEnemy3 == 1) {
-				arrowBaseSpeed_ = 8.0f;
-			}
-
-			// 矢印を上下に移動
-			attackArrowY += arrowDirection * arrowBaseSpeed_;
-
-			// 画面上端で反転
-			if (attackArrowY <= 0) {
-				attackArrowY = 0;
-				arrowDirection = 5; // 下方向に
-			}
-			// 画面下端で反転
-			else if (attackArrowY >= 576) {
-				attackArrowY = 576;
-				arrowDirection = -5; // 上方向に
-			}
-
-			//------------------------------------------
-			// スペースキーで攻撃判定
-			//------------------------------------------
-			if (delayTimerPoint == 0) {
-				if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-					// 一時停止 → 攻撃判定処理
-					if (arrowDirection == 0) {
-						// 動きを再開（上方向へ）
-						attackArrowY = 576;
-						arrowDirection = -5;
-					} else {
-						// 矢印の動きを止めて攻撃処理実行
-						arrowDirection = 0;
-
-						// 攻撃ターンを1消費
-						playerAttackTurn--;
-
-						// 矢印位置（攻撃ゲージライン）で攻撃の強さを決定
-						if (attackGaugeLain >= 0 && attackGaugeLain <= 106) {
-							playerHPPoint_--;    // ミス（自分にダメージ）
-							player_->OnDamage(); // ★ ダメージリアクション発動！
-							StartCameraShake();
-						}
-						if (attackGaugeLain >= 107 && attackGaugeLain <= 159) {
-							enemyHPPoint_--;     // 弱攻撃
-							player_->OnAttack(); // ★ 攻撃モーション発動！
-							enemy_->OnDamage();
-							// ★ ビーム発射！
-							Vector3 startPos = player_->GetWorldTransform().translation_;
-							startPos.x += 8.0f; // 自機前に出す
-							beam_->Activate(startPos);
-							// 音声再生
-							Audio::GetInstance()->PlayWave(soundBeamHandle_);
-						}
-						if (attackGaugeLain >= 160 && attackGaugeLain <= 210) {
-							enemyHPPoint_ -= attackGauge2; // 中攻撃
-							player_->OnAttack();           // ★ 攻撃モーション発動！
-							enemy_->OnDamage();
-							toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
-							// 音声再生
-							Audio::GetInstance()->PlayWave(soundTogeHandle_);
-						}
-						if (attackGaugeLain >= 211 && attackGaugeLain <= 262) {
-							enemyHPPoint_ -= attackGauge3; // 強攻撃
-							playerHPPoint_--;
-							player_->OnAttack(); // ★ 攻撃モーション発動！
-							enemy_->OnDamage();
-							StartCameraShake();
-							kami_->Start(enemy_->GetWorldPosition()); // 敵の上から雷が落ちる！
-							// 音声再生
-							Audio::GetInstance()->PlayWave(soundKamiHandle_);
-						}
-						if (attackGaugeLain >= 263 && attackGaugeLain <= 315) {
-							enemyHPPoint_ -= attackGauge2; // 中攻撃
-							player_->OnAttack();           // ★ 攻撃モーション発動！
-							enemy_->OnDamage();
-							toge_->Start(enemy_->GetWorldPosition()); // 敵の下からとげ出現！
-							// 音声再生
-							Audio::GetInstance()->PlayWave(soundTogeHandle_);
-						}
-						if (attackGaugeLain >= 316 && attackGaugeLain <= 367) {
-							enemyHPPoint_--;     // 弱攻撃
-							player_->OnAttack(); // ★ 攻撃モーション発動！
-							enemy_->OnDamage();
-							// ★ ビーム発射！
-							Vector3 startPos = player_->GetWorldTransform().translation_;
-							startPos.x += 8.0f; // 自機前に出す
-							beam_->Activate(startPos);
-							// 音声再生
-							Audio::GetInstance()->PlayWave(soundBeamHandle_);
-						}
-						if (attackGaugeLain >= 368 && attackGaugeLain <= 576) {
-							playerHPPoint_--;    // ミス（自分にダメージ）
-							player_->OnDamage(); // ★ ダメージリアクション発動！
-							StartCameraShake();
-						}
-					}
-				}
-			}
-
-			// ネクストステージ
-			if (stageEnemy1 == 1 && enemyHPPoint_ <= 0) {
-				delayTimerPoint = 1;
-				if (delayTimerPoint == 1) {
-					delayTimer--;
-				}
-				if (delayTimer <= 0) {
-					stageEnemy2 = 1;
-					playerHPPoint_ += 1;
-					enemyHPPoint_ = 5;
-					playerAttackTurn = 3;
-					stageEnemy1 = 0;
-					enemy_->Initialize(enemyModel2_, &camera_);
-					delayTimer = 150;
-					delayTimerPoint = 0;
-					// スカイドーム
-					modelSkydome_ = Model::CreateFromOBJ("SkyDome2", true);
-					skydome_->Initialize(modelSkydome_, &camera_);
-				}
-				/*stageEnemy2 = 1;
-				playerHPPoint_ += 1;
-				enemyHPPoint_ = 5;
-				playerAttackTurn = 3;
-				stageEnemy1 = 0;
-				enemy_->Initialize(enemyModel2_, &camera_); */
-			}
-			// ネクストステージ
-			if (stageEnemy2 == 1 && enemyHPPoint_ <= 0) {
-				delayTimerPoint = 1;
-				if (delayTimerPoint == 1) {
-					delayTimer--;
-				}
-				if (delayTimer <= 0) {
-					delayTimerPoint = 0;
-					delayTimer = 150;
-					stageEnemy3 = 1;
-					playerHPPoint_ += 1;
-					enemyHPPoint_ = 5;
-					playerAttackTurn = 3;
-					//enemy_->Initialize(enemyModel3_, &camera_);
-					stageEnemy2 = 0;
-					// スカイドーム
-					modelSkydome_ = Model::CreateFromOBJ("SkyDome3", true);
-					skydome_->Initialize(modelSkydome_, &camera_);
-				}
-				/*stageEnemy3 = 1;
-				playerHPPoint_ += 1;
-				enemyHPPoint_ = 5;
-				playerAttackTurn = 3;
-				stageEnemy2 = 0;*/
-			}
-			// ゲームクリアへ
-			if (stageEnemy3 == 1 && enemyHPPoint_ <= 0) {
-				delayTimerPoint = 1;
-				if (delayTimerPoint == 1) {
-					delayTimer--;
-				}
-				if (delayTimer <= 0) {
-					delayTimerPoint = 0;
-					delayTimer = 150;
-					gameClearSprite_->SetPosition({0, 0});
-					gameClear = 1;
-					gameOver = 0;
-					stageEnemy3 = 0;
-					// ゲームBGMを停止してクリアBGM再生
-					Audio::GetInstance()->StopWave(voiceGameHandle_);
-					voiceClearHandle_ = Audio::GetInstance()->PlayWave(soundClearHandle_, true);
-				}
-				/*gameClearSprite_->SetPosition({0, 0});
-				gameClear = 1;
-				gameOver = 0;
-				stageEnemy3 = 0;*/
-			}
-			// ゲームオーバーへ
-			if (delayTimerPoint <= 0) {
-				if (playerHPPoint_ <= 0) {
-					delayTimerPoint = 1;
-					if (delayTimerPoint == 1) {
-						delayTimer--;
-					}
-					if (delayTimer <= 0) {
-						delayTimerPoint = 0;
-						delayTimer = 150;
-						stageEnemy1 = 0;
-						stageEnemy2 = 0;
-						stageEnemy3 = 0;
-						gameClear = 0;
-						gameOver = 1;
-					}
-					/*stageEnemy1 = 0;
-					stageEnemy2 = 0;
-					stageEnemy3 = 0;
-					gameClear = 0;
-					gameOver = 1;*/
-				}
+	// ブロックの生成
+	for (uint32_t i = 0; i < numBlockVirtical; i++) {
+		for (uint32_t j = 0; j < numBlockHorizontal; j++) {
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) // 1マス分にボックスの形にしたいなら(i + j)にする
+			{
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+				worldTransformBlocks_[i][j] = worldTransform;
+				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
 			}
 		}
-		// ゲームオーバーへ
-		if (playerAttackTurn <= 0 && enemyHPPoint_ >= 1) {
-			delayTimerPoint = 1;
-			if (delayTimerPoint == 1) {
-				delayTimer--;
-			}
-			if (delayTimer <= 0) {
-				delayTimerPoint = 0;
-				delayTimer = 150;
-				stageEnemy1 = 0;
-				stageEnemy2 = 0;
-				stageEnemy3 = 0;
-				gameClear = 0;
-				gameOver = 1;
-				// ゲームBGMを停止してオーバーBGM再生
-				Audio::GetInstance()->StopWave(voiceGameHandle_);
-				voiceOverHandle_ = Audio::GetInstance()->PlayWave(soundOverHandle_, true);
-			}
-			/*stageEnemy1 = 0;
-			stageEnemy2 = 0;
-			stageEnemy3 = 0;
-			gameClear = 0;
-			gameOver = 1;*/
-		}
-	}
-	// ゲームクリア後
-	if (gameClear == 1) {
-
-		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
-			Audio::GetInstance()->PlayWave(soundBotanHandle_);
-			// BGMの切り替え
-			Audio::GetInstance()->StopWave(voiceClearHandle_);
-			Audio::GetInstance()->StopWave(voiceOverHandle_);
-			voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
-			// 全リセット ------------------------
-			titleScene = 1;
-			gameClear = 0;
-
-			stageEnemy1 = 0;
-			stageEnemy2 = 0;
-			stageEnemy3 = 0;
-
-			playerHPPoint_ = 5;
-			enemyHPPoint_ = 5;
-			playerAttackTurn = 3;
-
-			attackArrowY = 576 - 32; // 矢印位置リセット
-			arrowDirection = -5;
-
-			// 敵をステージ1へ戻す
-			player_->Initialize(modelPlayer_, &camera_);
-			enemy_->Initialize(enemyModel1_, &camera_);
-		}
-	}
-
-	//===============================
-	// ゲームオーバー後：ENTERでタイトルへ
-	//===============================
-	if (gameOver == 1) {
-
-		if (Input::GetInstance()->TriggerKey(DIK_RETURN)) {
-			Audio::GetInstance()->PlayWave(soundBotanHandle_);
-			// BGMの切り替え
-			Audio::GetInstance()->StopWave(voiceClearHandle_);
-			Audio::GetInstance()->StopWave(voiceOverHandle_);
-			voiceTitleHandle_ = Audio::GetInstance()->PlayWave(soundTitleHandle_, true);
-			// 全リセット ------------------------
-			titleScene = 1;
-			gameOver = 0;
-
-			stageEnemy1 = 0;
-			stageEnemy2 = 0;
-			stageEnemy3 = 0;
-
-			playerHPPoint_ = 5;
-			enemyHPPoint_ = 5;
-			playerAttackTurn = 3;
-
-			attackArrowY = 576 - 32; // 矢印位置リセット
-			arrowDirection = -5;
-
-			// 敵をステージ1へ戻す
-			player_->Initialize(modelPlayer_, &camera_);
-			enemy_->Initialize(enemyModel1_, &camera_);
-		}
-	}
-
-	// 矢印スプライトの座標を更新
-	attackArrowSprite_->SetPosition({attackArrowX, attackArrowY});
-
-	// 攻撃ゲージライン位置を更新
-	attackGaugeLain = attackArrowY + 24;
-	//------------------------------------------
-	// プレイヤー・敵の更新処理
-	//------------------------------------------
-	player_->Update();
-	enemy_->Update();
-
-	//------------------------------------------
-	// 攻撃の更新処理
-	//------------------------------------------
-	toge_->Update();
-	kami_->Update();
-	beam_->Update();
-
-	//------------------------------------------
-
-	//------------------------------------------
-	// カメラ更新
-	//------------------------------------------
-	camera_.translation_ = Vector3(0.0f, 0.0f, -10.0f);
-	camera_.UpdateMatrix();
-
-	if (isCameraShaking_) {
-		cameraShakeTimer_--;
-		camera_.translation_.x = defaultCameraPos_.x + (rand() % 100 / 100.0f - 0.5f) * cameraShakePower_;
-		camera_.translation_.y = defaultCameraPos_.y + (rand() % 100 / 100.0f - 0.5f) * cameraShakePower_;
-
-		if (cameraShakeTimer_ <= 0) {
-			isCameraShaking_ = false;
-			camera_.translation_ = defaultCameraPos_;
-		}
-	} else {
-		camera_.translation_ = defaultCameraPos_;
-	}
-	camera_.UpdateMatrix();
-
-	playerHPPoint_ = std::clamp(playerHPPoint_, 0, (int)hearts_.size());
-	enemyHPPoint_ = std::clamp(enemyHPPoint_, 0, (int)enemyHearts_.size());
-}
-
-//==================================================
-// 描画処理
-//==================================================
-void GameScene::Draw() {
-
-	if (titleScene == 1) {
-		Sprite::PreDraw();
-		gameTitleSprite_->Draw();
-		// スプライト描画後処理
-		Sprite::PostDraw();
-	}
-
-	if (gameRuruScene == 1) {
-		// スプライト描画前処理
-		Sprite::PreDraw();
-		gameRuruSprite_->Draw();
-		// スプライト描画後処理
-		Sprite::PostDraw();
-	}
-	// ゲームクリア描画
-	if (gameClear == 1) {
-		Sprite::PreDraw();
-		gameClearSprite_->Draw();
-		Sprite::PostDraw();
-	}
-	// ゲームオーバー描画
-	if (gameOver == 1) {
-		Sprite::PreDraw();
-		gameOverSprite_->Draw();
-		Sprite::PostDraw();
-	}
-
-	if (stageEnemy1 == 1 || stageEnemy2 == 1 || stageEnemy3 == 1) {
-		//------------------------------------------
-		// 3Dモデル描画
-		//------------------------------------------
-		Model::PreDraw();
-
-		player_->Draw(); // プレイヤー
-		enemy_->Draw();  // 敵
-		toge_->Draw();   // とげ攻撃
-		kami_->Draw();   // 雷攻撃
-		beam_->Draw();   // ビーム攻撃
-		// スカイドーム
-		skydome_->Draw();
-
-		Model::PostDraw();
-
-		//------------------------------------------
-		// 2Dスプライト描画
-		//------------------------------------------
-		Sprite::PreDraw();
-
-		fade_->Draw();
-
-		// 攻撃ゲージと矢印を描画
-		attackSprite_->Draw();
-		attackArrowSprite_->Draw();
-
-		int pMax = (int)hearts_.size();
-		int eMax = (int)enemyHearts_.size();
-
-		int pDraw = std::clamp(playerHPPoint_, 0, pMax);
-		int eDraw = std::clamp(enemyHPPoint_, 0, eMax);
-
-		// プレイヤーの残りHP分ハートを描画
-		for (int i = 0; i < pDraw; i++) {
-			hearts_[i]->Draw();
-		}
-
-		// 敵の残りHP分ハートを描画
-		for (int i = 0; i < eDraw; i++) {
-			enemyHearts_[i]->Draw();
-		}
-
-
-
-		// スプライト描画後処理
-		Sprite::PostDraw();
 	}
 }
 
-//==================================================
-// デストラクタ（終了処理）
-//==================================================
+// デストラクタ
 GameScene::~GameScene() {
+	delete sprite_;
 
-	 
-	//------------------------------------------
-	// プレイヤー関連の解放
-	//------------------------------------------
-	for (auto& heart : hearts_) {
-		delete heart;
-	}
-	hearts_.clear();
+	delete skydome_;
 
 	delete player_;
-	delete modelPlayer_;
 
-	delete attackSprite_;
-	delete attackArrowSprite_;
-	delete gameRuruSprite_;
-	delete gameTitleSprite_;
-	// スカイドーム
-	delete modelSkydome_;
+	delete deathParticles_;
 
-	//------------------------------------------
-	// 敵関連の解放
-	//------------------------------------------
-	delete enemy_;
-	delete enemyModel1_;
-	delete enemyModel2_;
-	//delete enemyModel3_;
-
-	for (auto& enemyHeart : enemyHearts_) {
-		delete enemyHeart;
-	}
-	enemyHearts_.clear();
-
-	//------------------------------------------
-	// 攻撃の解放
-	//------------------------------------------
-	// とげ攻撃
-	delete toge_;
-	delete modelToge_;
-
-	// 雷攻撃
-	delete kami_;
-	delete modelKami_;
-
-	// ビーム攻撃
-
-	delete modelBeam_;
-
+	// フェード
 	delete fade_;
-	delete titleSprite_;
-	delete gameSprite_;
 
-	//------------------------------------------
-	// （デバッグカメラは未使用）
-	//------------------------------------------
-	// delete debugCamera_;
+	for (Enemy* enemy : enemies_) {
+		delete enemy;
+	}
+
+	// delete enemy_;
+
+	// 3Dモデルデータの解放
+	delete model_;
+
+	// デバッグカメラの解放
+	delete debugCamera_;
+
+	// マップチップフィールドの解放
+	delete mapChipField_;
+
+	for (std::vector<KamataEngine::WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+			delete worldTransformBlock;
+		}
+	}
+	worldTransformBlocks_.clear();
 }
 
-void GameScene::StartCameraShake() {
-	isCameraShaking_ = true;
-	cameraShakeTimer_ = 30;   // 揺れるフレーム数
-	cameraShakePower_ = 0.1f; // 揺れの強さ
+// 更新
+void GameScene::Update() {
+
+	// フェード
+	fade_->Update();
+
+	switch (phase_) {
+	case Phase::kPlay:
+
+		// 全ての当たり判定
+		CheckAllCollisions();
+
+		// ゲームプレイフェーズの処理
+		if (player_->IsDead() == true) {
+			// デス演出フェーズに切り替え
+			phase_ = Phase::kDeath;
+
+			// 自キャラの座標を取得
+			const KamataEngine::Vector3 deathParticlesPosition = player_->GetWorldPosition();
+
+			// パーティクル
+			deathParticles_ = new DeathParticle();
+			deathParticles_->Initialize(modelParticle_, &camera_, deathParticlesPosition);
+		}
+		break;
+
+	case Phase::kDeath:
+		// デス演出フェーズの処理
+
+		// デスパーティクルの更新
+		deathParticles_->Update();
+		if (deathParticles_ && deathParticles_->isFinished_) {
+			// フェードアウト開始
+			phase_ = Phase::kFadeOut;
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+		}
+
+		/*
+		if ("deathParticle", true)
+		{
+		    // フェードアウト開始
+		    phase_ = Phase::kFadeOut;
+		    fade_->Start(Fade::Status::FadeOut, 1.0f);
+		    deathParticles_->Update();
+		    finished_ = deathParticles_->isFinished_;
+		}
+		*/
+
+		break;
+	case Phase::kFadeIn:
+		// フェード
+		fade_->Update();
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kPlay;
+		}
+		break;
+	case Phase::kFadeOut:
+		// フェード
+		fade_->Update();
+		if (fade_->IsFinished()) {
+			finished_ = true;
+		}
+		break;
+	}
+
+	// 自キャラの更新
+	player_->Update();
+
+	// 天球の更新
+	skydome_->Update();
+
+	// 敵の更新
+	// enemy_->Update();
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
+
+	// カメラコントローラーの更新
+	cameraController_->Update();
+
+	// 行列を定義バッファに転送
+	// worldTransform_.TransferMatrix();
+
+	// debugCamera_->Update();
+
+#ifdef _DEBUG
+	if (Input::GetInstance()->TriggerKey(DIK_0)) {
+		isDebugCameraActive_ = !isDebugCameraActive_;
+	}
+
+#endif // _DEBUG
+
+	if (isDebugCameraActive_) {
+		debugCamera_->Update();
+		camera_.matView = debugCamera_->GetCamera().matView;
+		camera_.matProjection = debugCamera_->GetCamera().matProjection;
+		camera_.TransferMatrix();
+	} else {
+		camera_.matView = cameraController_->GetViewProjection().matView;
+		camera_.matProjection = cameraController_->GetViewProjection().matProjection;
+		// ビュープロジェクション行列の更新と転送
+		camera_.TransferMatrix();
+	}
+	// ブロックの更新
+	for (std::vector<KamataEngine::WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+
+			if (!worldTransformBlock) {
+				continue;
+			}
+
+			// アフィン変換行列の作成
+
+			worldTransformBlock->matWorld_ = MakeAffineMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
+
+			////定数バッファに転送する
+
+			worldTransformBlock->TransferMatrix();
+		}
+	}
+}
+
+// 描画
+void GameScene::Draw() {
+
+	// DirectXCommonインスタンスの取得
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+
+	Model::PreDraw(dxCommon->GetCommandList());
+
+	// 3Dモデル描画
+	//
+	// model_->Draw(worldTransform_, camera_, textureHandle_);
+
+	// 自キャラの描画
+	if (phase_ == Phase::kPlay || phase_ == Phase::kFadeIn) {
+		player_->Draw();
+	}
+
+	// パーティクル
+	if ("deathParticle", true) {
+		deathParticles_->Draw();
+	}
+
+	// 敵の描画
+	// enemy_->Draw();
+	for (Enemy* enemy : enemies_) {
+		enemy->Draw();
+	}
+
+	// ブロックの描画
+	for (std::vector<KamataEngine::WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
+			if (!worldTransformBlock) {
+				continue;
+			}
+			cube_->Draw(*worldTransformBlock, camera_);
+		}
+	}
+
+	skydome_->Draw();
+
+	// 3Dモデル描画前処理
+	Model::PostDraw(); // プログラムの終了
+
+	// フェード
+	fade_->Draw();
+}
+
+// 衝突判定
+void GameScene::CheckAllCollisions() {
+
+#pragma region 自キャラと敵キャラの当たり判定
+
+	// 判定対象1と2の座標
+	AABB aabb1, aabb2;
+
+	aabb1 = player_->GetAABB();
+
+	// 自キャラと敵弾全ての当たり判定
+	for (Enemy* enemy : enemies_) {
+		// 敵弾の座標
+		aabb2 = enemy->GetAABB();
+
+		// AABB同士の交差判定
+		if (IsCollition(aabb1, aabb2)) {
+			// 自キャラの衝突時関数を呼び出す
+			player_->OnCollition(enemy);
+			// 敵の衝突時関数を呼び出す
+			enemy->OnCollition(player_);
+		}
+	}
+
+#pragma endregion
+}
+
+// フェーズ
+void GameScene::ChangePhase() {
+
+	switch (phase_) {
+	case Phase::kPlay:
+		// ゲームプレイフェーズの処理
+
+		if (player_->IsDead() == true) {
+			// デス演出フェーズに切り替え
+			phase_ = Phase::kDeath;
+
+			// 自キャラの座標を取得
+			const KamataEngine::Vector3 deathParticlesPosition = player_->GetWorldPosition();
+
+			// パーティクル
+			deathParticles_ = new DeathParticle();
+			deathParticles_->Initialize(modelParticle_, &camera_, deathParticlesPosition);
+		}
+
+		break;
+
+	case Phase::kDeath:
+		// デス演出フェーズの処理
+
+		if (deathParticles_) {
+			// シーン終了
+			finished_ = true;
+		}
+
+		break;
+	}
 }
